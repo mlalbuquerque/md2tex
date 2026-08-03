@@ -1,0 +1,118 @@
+name: CI/CD Pipeline & Cross-Platform Release Build
+
+on:
+  push:
+    branches: [ main, master, "001-*" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }} (Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup Pandoc
+        uses: pandoc/actions/setup@v2
+        with:
+          version: "3.1.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e ".[dev]"
+
+      - name: Run Pytest Test Suite
+        run: |
+          pytest --verbose
+
+  build-executables:
+    name: Build Standalone Executable on ${{ matrix.os }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup Pandoc
+        uses: pandoc/actions/setup@v2
+        with:
+          version: "3.1.11"
+
+      - name: Install PyInstaller and dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel pyinstaller
+          python -m pip install -e .
+
+      - name: Build Standalone Executable with PyInstaller (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          pyinstaller --noconfirm --clean --onefile \
+            --name md2tex \
+            --add-data "src/md2tex/templates:md2tex/templates" \
+            --add-data "src/md2tex/filters:md2tex/filters" \
+            src/md2tex/__main__.py
+
+      - name: Build Standalone Executable with PyInstaller (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pyinstaller --noconfirm --clean --onefile `
+            --name md2tex `
+            --add-data "src/md2tex/templates;md2tex/templates" `
+            --add-data "src/md2tex/filters;md2tex/filters" `
+            src/md2tex/__main__.py
+
+      - name: Upload Executable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: md2tex-${{ runner.os }}
+          path: |
+            dist/md2tex
+            dist/md2tex.exe
+
+  release:
+    name: Create GitHub Release
+    needs: build-executables
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Archive artifacts for Release
+        run: |
+          mkdir -p release-files
+          tar -czf release-files/md2tex-linux-x64.tar.gz -C md2tex-Linux md2tex
+          zip -j release-files/md2tex-macos-x64.zip md2tex-macOS/md2tex
+          zip -j release-files/md2tex-windows-x64.zip md2tex-Windows/md2tex.exe
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/*
+          generate_release_notes: true

@@ -1,0 +1,86 @@
+# ==============================================================================
+# .gitignore - netra-md2tex
+# Configuração para ignorar arquivos temporários, de compilação, ambientes e IDEs.
+# ==============================================================================
+
+# --- Ambientes Virtuais & Caches Python ---
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Empacotamento & Build Python ---
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+*.manifest
+*.spec
+
+# --- Testes & Qualidade de Código ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# --- Compilação & Arquivos Auxiliares LaTeX ---
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.synctex.gz
+*.xdv
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.nav
+*.snm
+*.vrb
+_minted-*/
+
+# --- Arquivos Temporários de Build do netra-md2tex ---
+.*-build/
+
+# --- PDFs Gerados de Saída ---
+# Ignora arquivos PDF gerados em compilações de teste/produção local
+*.pdf
+
+# Exceções (preserva PDFs de exemplo sob controle de versão, se houver):
+!examples/*.pdf
+
+# --- Imagens & Diagramas Temporários Gerados ---
+# figuras geradas pelo Mermaid via mmdc
+figures/
+
+# --- Editores de Código & Sistema Operacional ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Configurações de IDEs (VSCode, PyCharm)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~

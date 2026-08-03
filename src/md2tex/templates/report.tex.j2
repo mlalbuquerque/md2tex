@@ -1,0 +1,138 @@
+\documentclass[((% if user_config and user_config.class_options %))((* user_config.class_options|join(',') *))((% else %))11pt,a4paper((% endif %))]{((* user_config.document_class if user_config else 'article' *))}
+
+\PassOptionsToPackage{normalem}{ulem}
+\PassOptionsToPackage{brazil}{babel}
+((% if style_path %))
+\usepackage{((* style_path *))}
+((% endif %))
+((% if user_config and user_config.style_packages %))
+((% for pkg in user_config.style_packages %))
+\usepackage{((* pkg[:-4] if pkg.endswith('.sty') else pkg *))}
+((% endfor %))
+((% endif %))
+
+\makeatletter
+((% if engine in ["xelatex", "lualatex"] %))
+\@ifpackageloaded{fontspec}{}{\usepackage{fontspec}}
+((% else %))
+\@ifpackageloaded{inputenc}{}{\usepackage[utf8]{inputenc}}
+\@ifpackageloaded{fontenc}{}{\usepackage[T1]{fontenc}}
+((% endif %))
+\@ifpackageloaded{longtable}{}{\usepackage{longtable}}
+\@ifpackageloaded{booktabs}{}{\usepackage{booktabs}}
+\@ifpackageloaded{array}{}{\usepackage{array}}
+\@ifpackageloaded{calc}{}{\usepackage{calc}}
+\@ifpackageloaded{graphicx}{}{\usepackage{graphicx}}
+\@ifpackageloaded{adjustbox}{}{\usepackage{adjustbox}}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\@ifpackageloaded{pdflscape}{}{\usepackage{pdflscape}}
+\@ifpackageloaded{xcolor}{}{\usepackage{xcolor}}
+\@ifpackageloaded{ulem}{}{\usepackage{ulem}}
+\@ifpackageloaded{enumitem}{}{\usepackage{enumitem}}
+\@ifpackageloaded{ragged2e}{}{\usepackage{ragged2e}}
+\@ifpackageloaded{babel}{}{\usepackage{babel}}
+\@ifpackageloaded{amssymb}{}{\usepackage{amssymb}}
+\@ifpackageloaded{tcolorbox}{}{\usepackage{tcolorbox}}
+\@ifpackageloaded{etoolbox}{}{\usepackage{etoolbox}}
+\@ifpackageloaded{hyperref}{}{\usepackage{hyperref}}
+\@ifpackageloaded{xurl}{}{\usepackage{xurl}}
+\@ifpackageloaded{listings}{}{\usepackage{listings}}
+((% if used_svg %))
+\@ifpackageloaded{svg}{}{\usepackage{svg}}
+((% endif %))
+\makeatother
+\tcbuselibrary{breakable}
+
+\robustify\url
+\robustify\path
+\pdfstringdefDisableCommands{%
+  \def\url#1{\passthrough{\detokenize{#1}}}%
+  \def\path#1{\passthrough{\detokenize{#1}}}%
+}
+
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  upquote=true
+}
+\Urlmuskip=0mu plus 1mu
+\graphicspath{{((* source_dir *))}}
+
+\setlength{\emergencystretch}{3em}
+\providecommand{\passthrough}[1]{#1}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\providecommand{\netraTableOfContents}{\tableofcontents\clearpage}
+\providecommand{\netraStartTable}{}
+\providecommand{\netraEndTable}{}
+\providecommand{\netraDivider}{\par\noindent\rule{\linewidth}{0.4pt}\par}
+
+\newtcolorbox{netraMdNote}{
+  breakable,
+  title=Observação,
+  colback=gray!5,
+  colframe=gray!55!black
+}
+\newtcolorbox{netraMdWarning}{
+  breakable,
+  title=Atenção,
+  colback=yellow!8,
+  colframe=yellow!45!black
+}
+\newtcolorbox{netraMdDecision}{
+  breakable,
+  title=Decisão,
+  colback=blue!5,
+  colframe=blue!55!black
+}
+
+\hypersetup{
+  pdftitle={((* metadata.title|latex *))},
+  pdfauthor={((* metadata.author|latex *))},
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue
+}
+
+\title{((* metadata.title|latex *))}
+\author{((* metadata.author|latex *))}
+\date{((* metadata.date|latex *))}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{1.8cm}
+  {\LARGE\bfseries ((* metadata.title|latex *))\par}
+  ((% if metadata.subtitle %))
+  \vspace{0.4cm}
+  {\large ((* metadata.subtitle|latex *))\par}
+  ((% endif %))
+  \vspace{0.8cm}
+  {\large ((* metadata.document_type|latex *))\par}
+  \vfill
+  ((% if metadata.client %))
+  {\normalsize Cliente/Projeto: ((* metadata.client|latex *))\par}
+  \vspace{0.15cm}
+  ((% endif %))
+  {\normalsize Autor: ((* metadata.author|latex *))\par}
+  {\normalsize Versão: ((* metadata.version|latex *))\par}
+  ((% if metadata.status %))
+  {\normalsize Status: ((* metadata.status|latex *))\par}
+  ((% endif %))
+  {\normalsize Data: ((* metadata.date|latex *))\par}
+  \vspace*{1.2cm}
+\end{titlepage}
+
+((% if toc %))
+\netraTableOfContents
+((% endif %))
+
+((* body *))
+
+\end{document}
