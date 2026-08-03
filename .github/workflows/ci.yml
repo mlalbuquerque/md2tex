@@ -27,7 +27,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Setup Pandoc
-        uses: pandoc/actions/setup@v2
+        uses: pandoc/actions/setup@v1
         with:
           version: "3.1.11"
 
@@ -58,7 +58,7 @@ jobs:
           python-version: "3.12"
 
       - name: Setup Pandoc
-        uses: pandoc/actions/setup@v2
+        uses: pandoc/actions/setup@v1
         with:
           version: "3.1.11"
 
