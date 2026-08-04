@@ -53,7 +53,8 @@ def validate_style_paths(style_packages: list[str], base_dir: Path | None = None
             p = Path(pkg)
             if not p.is_absolute() and base_dir:
                 p = base_dir / p
-            if not p.exists():
+            p_sty = Path(str(p) + ".sty") if not str(p).endswith(".sty") else p
+            if not (p.exists() or p_sty.exists()):
                 msg = f"Aviso: Pacote de estilo local não encontrado: '{pkg}'"
                 warnings.append(msg)
                 print(msg, file=sys.stderr)
