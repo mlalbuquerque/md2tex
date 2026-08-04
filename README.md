@@ -475,13 +475,13 @@ Listas de checagem utilizam a extensão `task_lists` do Pandoc:
 
 ### Diagramas Mermaid
 
-```md
+````markdown
 ```mermaid {caption="Fluxo do Processo" width="90%" name="diagrama-fluxo"}
 flowchart LR
     A[Início] --> B[Processamento]
     B --> C[Fim]
 ```
-```
+````
 
 Flags de formato Mermaid: `--mermaid-format png` *(padrão)*, `pdf` ou `svg`. Para desativar a geração de diagramas, utilize `--no-mermaid`.
 
