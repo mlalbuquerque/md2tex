@@ -42,10 +42,10 @@ def markdown_to_latex_fragment(
     metadata_file.write_text(
         json.dumps(
             {
-                "netra-landscape-tables": landscape_tables,
-                "netra-wrap-tables": True,
-                "netra-table-font": table_font,
-                "netra-table-width": table_width,
+                "md2tex-landscape-tables": landscape_tables,
+                "md2tex-wrap-tables": True,
+                "md2tex-table-font": table_font,
+                "md2tex-table-width": table_width,
             },
             ensure_ascii=False,
         ),

@@ -1,4 +1,4 @@
-# Próximos Passos do Projeto netra-md2tex
+# Próximos Passos do Projeto md2tex
 
 ## Status Atual
 - **Análise e Reestruturação do README.md**: Concluída com sucesso. O arquivo foi totalmente consolidado em 15 seções lógicas sem redundâncias ou seções dispersas.

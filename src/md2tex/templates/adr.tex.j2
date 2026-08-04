@@ -67,24 +67,24 @@
 \providecommand{\passthrough}[1]{#1}
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\providecommand{\netraTableOfContents}{\tableofcontents\clearpage}
-\providecommand{\netraStartTable}{}
-\providecommand{\netraEndTable}{}
-\providecommand{\netraDivider}{\par\noindent\rule{\linewidth}{0.4pt}\par}
+\providecommand{\mdtexTableOfContents}{\tableofcontents\clearpage}
+\providecommand{\mdtexStartTable}{}
+\providecommand{\mdtexEndTable}{}
+\providecommand{\mdtexDivider}{\par\noindent\rule{\linewidth}{0.4pt}\par}
 
-\newtcolorbox{netraMdNote}{
+\newtcolorbox{mdtexNote}{
   breakable,
   title=Observação,
   colback=gray!5,
   colframe=gray!55!black
 }
-\newtcolorbox{netraMdWarning}{
+\newtcolorbox{mdtexWarning}{
   breakable,
   title=Atenção,
   colback=yellow!8,
   colframe=yellow!45!black
 }
-\newtcolorbox{netraMdDecision}{
+\newtcolorbox{mdtexDecision}{
   breakable,
   title=Decisão,
   colback=blue!5,
@@ -130,7 +130,7 @@
 \end{titlepage}
 
 ((% if toc %))
-\netraTableOfContents
+\mdtexTableOfContents
 ((% endif %))
 
 ((* body *))

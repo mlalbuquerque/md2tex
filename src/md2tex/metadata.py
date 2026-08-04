@@ -20,7 +20,7 @@ def build_metadata(
         or extracted_title
         or options.input_path.stem.replace("-", " ").strip().title()
     )
-    author = options.author or _as_text(raw.get("author")) or "Netra Tecnologia"
+    author = options.author or _as_text(raw.get("author")) or ""
     document_date = options.date or _as_text(raw.get("date")) or date.today().isoformat()
     version = (
         options.document_version

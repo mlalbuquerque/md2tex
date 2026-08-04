@@ -51,7 +51,7 @@ def convert(options: ConversionOptions) -> ConversionResult:
     messages.extend(mermaid_result.messages)
 
     package_root = Path(str(files("md2tex")))
-    lua_filter = package_root / "filters" / "netra.lua"
+    lua_filter = package_root / "filters" / "md2tex.lua"
     profile = get_profile(options.profile)
     template_path = options.template_path or package_root / "templates" / profile["template"]
 

@@ -1,6 +1,6 @@
 ---
 title: Relatório de Exemplo
-author: Netra Tecnologia
+author: Autor
 date: 2026-07-30
 version: "1.0"
 client: Projeto Exemplo

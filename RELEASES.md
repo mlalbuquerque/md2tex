@@ -16,6 +16,10 @@ Este documento descreve as sugestões de evolução e ideias para as próximas v
 - [ ] **Filtros Lua Customizados no `config.yaml`**:
   - Permitir que os usuários adicionem caminhos de filtros Lua personalizados na chave `lua_filters` do `config.yaml`.
 
+#### 💡 Detalhamento dos Conceitos da v2.1.0:
+- **Arquivo `.bib` (BibTeX/BibLaTeX)**: Banco de dados padronizado de referências bibliográficas. O autor cita no Markdown via `[@chave]` e o `md2tex` gera a lista de referências no final do documento LaTeX/PDF automaticamente.
+- **Filtros Lua (*Lua Filters*)**: Scripts em Lua que modificam a árvore semântica (AST) do documento Pandoc na memória antes da geração do LaTeX (ex: caixas de aviso, formatação de tabelas e URLs protegidas).
+
 ---
 
 ### 🎨 Versão v2.2.0 (Minor Release - Produtividade & Estilização Avançada)
@@ -52,4 +56,4 @@ Este documento descreve as sugestões de evolução e ideias para as próximas v
 - **v1.2.x**: 
   - Suporte a comandos inline protegidos contra *moving arguments* no LaTeX.
 - **v1.0.0**: 
-  - Versão inicial do conversor Markdown para LaTeX no padrão Netra.
+  - Versão inicial do conversor Markdown para LaTeX.

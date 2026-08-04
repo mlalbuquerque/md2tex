@@ -13,14 +13,14 @@ A ferramenta usa o Pandoc para interpretar o Markdown como uma estrutura semânt
 - **Precedência de CLI**: Sobrescrita de configurações via flags CLI (`--config`, `--style`, `--engine`).
 - **Saídas Flexíveis**: Geração de código TEX e, opcionalmente, compilação de PDF.
 - **Perfis Documentais**: Suporte nativo a relatórios (`report`), memórias de reunião (`meeting-minutes`), ADRs (`adr`) e planos técnicos (`technical-plan`).
-- **Estilo Corporativo**: Inclusão automática do pacote `netra-letterhead`.
+- **Estilo Customizado**: Suporte ao carregamento de pacotes `.sty` via arquivo de configuração ou flag CLI.
 - **Metadados YAML**: Configuração de capa, título, versão, cliente, data, status e autor via Front Matter ou CLI.
 - **Normalização de Títulos**: Remoção automática de numeração manual em títulos Markdown, delegando a numeração ao LaTeX.
 - **Formatação Inline Inteligente**:
   - Negrito, itálico, código inline e tachado (inclusive aninhados).
   - Classificação de código: caminhos de arquivos (`\path`), URLs (`\url` com `xurl`), comandos (`\lstinline`) e identificadores (`\texttt`).
 - **Controle Avançado de Tabelas**:
-  - Envolvimento por ambiente seguro Netra (`\netraStartTable` / `\netraEndTable`).
+  - Envolvimento por ambiente seguro (`\mdtexStartTable` / `\mdtexEndTable`).
   - Orientação automática em paisagem (`auto`, `always`, `never`).
   - Ajuste de fonte (`normalsize`, `small`, `footnotesize`, `scriptsize`) e estratégias de largura (`auto`, `equal`, `natural`).
 - **Imagens e Mídia**: Limitação à largura e altura úteis da página sem distorção proporcional.
@@ -41,12 +41,12 @@ Markdown (.md)
    ↓
 Leitura do YAML Front Matter
    ↓
-Normalização Netra
+Normalização Markdown
    ├── Remove numeração manual dos títulos
    ├── Extrai H1 como título (quando necessário)
    └── Processa diagramas Mermaid via mmdc
    ↓
-Pandoc + Filtro Lua (netra.lua)
+Pandoc + Filtro Lua (md2tex.lua)
    ├── Converte para AST semântica
    ├── Formata tabelas e define orientação (retrato/paisagem)
    ├── Processa blocos especiais (note, warning, decision)
@@ -123,7 +123,7 @@ pip install -e ".[dev]"
 
 ### Opção B: Instalação via `pipx` (Recomendado no Ubuntu 24.04+ / PEP 668)
 
-O `pipx` permite instalar o pacote em um ambiente isolado disponibilizando o executável `netra-md2tex` globalmente no PATH do usuário.
+O `pipx` permite instalar o pacote em um ambiente isolado disponibilizando o executável `md2tex` globalmente no PATH do usuário.
 
 1. Instale o `pipx`:
    ```bash
@@ -135,7 +135,7 @@ O `pipx` permite instalar o pacote em um ambiente isolado disponibilizando o exe
 
 2. Instale o pacote a partir do Wheel gerado:
    ```bash
-   pipx install ./dist/netra_md2tex-1.2.1-py3-none-any.whl
+   pipx install ./dist/md2tex-1.2.1-py3-none-any.whl
    ```
 
    *(Para atualizar ou sobrescrever uma instalação prévia, utilize `pipx install --force ...`)*
@@ -143,8 +143,8 @@ O `pipx` permite instalar o pacote em um ambiente isolado disponibilizando o exe
 ### Testando a Instalação
 
 ```bash
-netra-md2tex --version
-netra-md2tex --help
+md2tex --version
+md2tex --help
 ```
 
 ---
@@ -156,19 +156,19 @@ netra-md2tex --help
 Gerar apenas o arquivo `.tex`:
 
 ```bash
-netra-md2tex documento.md
+md2tex documento.md
 ```
 
 Gerar o arquivo `.tex` e compilar o PDF:
 
 ```bash
-netra-md2tex documento.md --pdf
+md2tex documento.md --pdf
 ```
 
 ### Exemplo Completo (Avançado)
 
 ```bash
-netra-md2tex documento.md \
+md2tex documento.md \
   --type report \
   --output build/documento.tex \
   --figures figures \
@@ -187,23 +187,23 @@ netra-md2tex documento.md \
 
 ## 6. Perfis Documentais
 
-A ferramenta possui 4 perfis pré-configurados que utilizam templates específicos localizados em `src/netra_md2tex/templates/`:
+A ferramenta possui 4 perfis pré-configurados que utilizam templates específicos localizados em `src/md2tex/templates/`:
 
 1. **Relatório (`report`)**:
    ```bash
-   netra-md2tex relatorio.md --type report
+   md2tex relatorio.md --type report
    ```
 2. **Memória de Reunião (`meeting-minutes`)**:
    ```bash
-   netra-md2tex memoria.md --type meeting-minutes
+   md2tex memoria.md --type meeting-minutes
    ```
 3. **Plano de Decisão Arquitetural (`adr`)**:
    ```bash
-   netra-md2tex adr.md --type adr
+   md2tex adr.md --type adr
    ```
 4. **Plano Técnico (`technical-plan`)**:
    ```bash
-   netra-md2tex plano.md --type technical-plan
+   md2tex plano.md --type technical-plan
    ```
 
 ---
@@ -214,13 +214,13 @@ Você pode definir metadados no topo do arquivo Markdown utilizando YAML Front M
 
 ```yaml
 ---
-title: Análise de Pertinência de Documentos da SOA
-author: Netra Tecnologia
+title: Relatório Técnico de Exemplo
+author: Autor
 date: 2026-07-30
 version: "1.0"
-client: Projeto ISO 27001
-document-type: Relatório de Análise
-subtitle: Declaração de Aplicabilidade
+client: Projeto Exemplo
+document-type: Relatório Técnico
+subtitle: Subtítulo do Documento
 status: Em revisão
 ---
 ```
@@ -237,9 +237,9 @@ Caso um parâmetro seja informado em múltiplos lugares, a ordem de prioridade (
 Exemplo de sobrescrita de metadados pela CLI:
 
 ```bash
-netra-md2tex documento.md \
+md2tex documento.md \
   --title "Título Definitivo" \
-  --author "Netra Tecnologia" \
+  --author "Sua Empresa" \
   --date 2026-07-30 \
   --document-version "1.1" \
   --client "Cliente X"
@@ -249,29 +249,29 @@ netra-md2tex documento.md \
 
 ## 8. Folhas de Estilo Personalizadas e Portabilidade (`--style-path`)
 
-A opção `--style-path` permite especificar **qualquer pacote ou arquivo de estilo LaTeX (`.sty`)**, tanto no padrão corporativo da Netra quanto em estilos genéricos e personalizados.
+A opção `--style-path` permite especificar **qualquer pacote ou arquivo de estilo LaTeX (`.sty`)**, em estilos genéricos e personalizados.
 
 ### Suporte a Estilos Genéricos e Fallbacks
 
 A ferramenta foi projetada com fallbacks universais para garantir que a conversão funcione com qualquer estilo `.sty`:
 
 - **Compatibilidade Global**: O cabeçalho do documento injeta a diretiva `\usepackage{<style_path>}`.
-- **Fallbacks Nativos (`\providecommand`)**: Os templates fornecem implementações padrão seguras para comandos internos (como `\netraStartTable`, `\netraEndTable`, `\netraTableOfContents` e `\netraDivider`). Se o seu `.sty` os definir, o seu estilo personalizado terá prioridade; caso contrário, os fallbacks padrão do LaTeX serão usados sem gerar erros.
+- **Fallbacks Nativos (`\providecommand`)**: Os templates fornecem implementações padrão seguras para comandos internos (como `\mdtexStartTable`, `\mdtexEndTable`, `\mdtexTableOfContents` e `\mdtexDivider`). Se o seu `.sty` os definir, o seu estilo personalizado terá prioridade; caso contrário, os fallbacks padrão do LaTeX serão usados sem gerar erros.
 - **Inclusão Segura de Pacotes (`\@ifpackageloaded`)**: Todos os pacotes essenciais para renderização (tabelas, imagens, caixas anotadas, links, código inline) são carregados condicionalmente, evitando conflitos de pacotes duplicados com a sua folha de estilo.
 
 ### Formas de Uso da Flag `--style-path`
 
 1. **Caminho Relativo ou Absoluto**:
    ```bash
-   netra-md2tex documento.md --style-path ./estilos/meu-estilo-customizado
+   md2tex documento.md --style-path ./estilos/meu-estilo-customizado
    ```
 2. **Nome de Pacote Instalado no Sistema TeX**:
    ```bash
-   netra-md2tex documento.md --style-path meu-pacote-tex
+   md2tex documento.md --style-path meu-pacote-tex
    ```
-3. **Estilo Corporativo Netra (Default)**:
+3. **Estilo Customizado**:
    ```bash
-   netra-md2tex documento.md --style-path /home/mlalbuquerque/Dropbox/Netra/projetos/netra-letterhead
+   md2tex documento.md --style-path ./estilos/meu-estilo
    ```
 
 > **Nota de Sintaxe**: O parâmetro deve ser informado **sem a extensão `.sty`** (exemplo: `meu-estilo`), pois o LaTeX adiciona a extensão `.sty` automaticamente na diretiva `\usepackage{...}`. Em ambientes de CI/CD ou distribuição, você também pode especificar caminhos relativos ou utilizar a variável de ambiente `TEXINPUTS`.
@@ -300,7 +300,7 @@ O conversor classifica inteligentemente trechos de código inline:
 
 ### Tabelas
 
-Tabelas em Markdown são envoltas pelos comandos `\netraStartTable` e `\netraEndTable`.
+Tabelas em Markdown são envoltas pelos comandos `\mdtexStartTable` e `\mdtexEndTable`.
 
 ```md
 | Controle | Status | Evidência |
@@ -359,13 +359,13 @@ Listas de checagem utilizam a extensão `task_lists` do Pandoc:
 
 ### Diagramas Mermaid
 
-````md
+```md
 ```mermaid {caption="Fluxo do Processo" width="90%" name="diagrama-fluxo"}
 flowchart LR
     A[Início] --> B[Processamento]
     B --> C[Fim]
 ```
-````
+```
 
 Flags de formato Mermaid: `--mermaid-format png` *(padrão)*, `pdf` ou `svg`. Para desativar a geração de diagramas, utilize `--no-mermaid`.
 
@@ -378,7 +378,7 @@ Flags de formato Mermaid: `--mermaid-format png` *(padrão)*, `pdf` ou `svg`. Pa
 Para compilar o PDF utilize a flag `--pdf`:
 
 ```bash
-netra-md2tex documento.md --pdf --engine xelatex
+md2tex documento.md --pdf --engine xelatex
 ```
 
 Motores suportados: `xelatex` *(padrão)*, `lualatex`, `pdflatex`. A compilação utiliza `latexmk` se disponível, executando passagens adicionais automaticamente quando necessário.
@@ -407,7 +407,7 @@ A validação é ativada por padrão (`--validate`):
 ### Modo Estrito para Pipelines (CI/CD)
 
 ```bash
-netra-md2tex documento.md --strict
+md2tex documento.md --strict
 ```
 
 No modo estrito (`--strict`), qualquer inconsistência ou aviso de validação faz o comando encerrar com código de erro não-zero, interrompendo a execução de pipelines de automação.
@@ -430,7 +430,7 @@ Variáveis expostas no contexto: `metadata`, `body`, `style_path`, `toc`, `engin
 ## 13. Referência de Opções do CLI
 
 ```text
-Usage: netra-md2tex [OPTIONS] INPUT_FILE
+Usage: md2tex [OPTIONS] INPUT_FILE
 
 Options:
   -o, --output FILE                  Caminho do arquivo TEX de saída.
@@ -441,7 +441,7 @@ Options:
   --date TEXT                        Data do documento.
   --document-version TEXT            Versão do documento.
   --client TEXT                      Nome do cliente.
-  --style-path TEXT                  Caminho para o estilo netra-letterhead.
+  --style-path TEXT                  Caminho para o pacote de estilo (.sty).
   --figures DIRECTORY                Diretório de saída para imagens e diagramas.
   --template FILE                    Template Jinja2 customizado (.tex.j2).
   --pdf / --no-pdf                   Habilita ou desabilita a compilação PDF.
@@ -472,15 +472,15 @@ Options:
 ## 14. Estrutura do Projeto
 
 ```text
-netra-md2tex/
+md2tex/
 ├── bin/
-│   └── netra-md2tex               # Script executável direto
+│   └── md2tex                    # Script executável direto
 ├── examples/                      # Exemplo de documentos em Markdown
 │   ├── adr.md
 │   └── relatorio.md
-├── src/netra_md2tex/             # Código-fonte principal
+├── src/md2tex/                   # Código-fonte principal
 │   ├── filters/
-│   │   └── netra.lua              # Filtro Lua do Pandoc
+│   │   └── md2tex.lua             # Filtro Lua do Pandoc
 │   ├── templates/                 # Templates Jinja2 LaTeX
 │   │   ├── adr.tex.j2
 │   │   ├── base.tex.j2
@@ -521,7 +521,7 @@ pytest
 Para verificar a cobertura de testes:
 
 ```bash
-pytest --cov=netra_md2tex --cov-report=term-missing
+pytest --cov=md2tex --cov-report=term-missing
 ```
 
 ### Licença

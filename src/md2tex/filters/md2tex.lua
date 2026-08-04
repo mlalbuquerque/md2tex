@@ -1,4 +1,4 @@
--- Filtro Pandoc para adequações específicas do padrão Netra.
+-- Filtro Pandoc para adequações específicas do md2tex.
 
 local landscape_mode = "auto"
 local wrap_tables = true
@@ -98,7 +98,7 @@ local function looks_like_command(text)
     ["apt-get"]=true, systemctl=true, journalctl=true, grep=true, sed=true,
     awk=true, find=true, chmod=true, chown=true, cp=true, mv=true, rm=true,
     mkdir=true, tar=true, unzip=true, zip=true, pandoc=true, xelatex=true,
-    lualatex=true, pdflatex=true, latexmk=true, ["netra-md2tex"]=true,
+    lualatex=true, pdflatex=true, latexmk=true, ["md2tex"]=true,
   }
   return commands[first] == true or text:match("^%$%s+") ~= nil
 end
@@ -129,8 +129,8 @@ local function handle_table(tbl)
     table.insert(before, pandoc.RawBlock("latex", "\\" .. table_font))
   end
   if wrap_tables then
-    table.insert(before, pandoc.RawBlock("latex", "\\netraStartTable"))
-    table.insert(after, 1, pandoc.RawBlock("latex", "\\netraEndTable"))
+    table.insert(before, pandoc.RawBlock("latex", "\\mdtexStartTable"))
+    table.insert(after, 1, pandoc.RawBlock("latex", "\\mdtexEndTable"))
   end
   if landscape then table.insert(after, pandoc.RawBlock("latex", "\\end{landscape}")) end
 
@@ -194,10 +194,10 @@ local function handle_inline_image(image)
 end
 
 local div_map = {
-  warning = "netraMdWarning",
-  decision = "netraMdDecision",
-  note = "netraMdNote",
-  info = "netraMdNote",
+  warning = "mdtexWarning",
+  decision = "mdtexDecision",
+  note = "mdtexNote",
+  info = "mdtexNote",
 }
 
 local function handle_div(div)
@@ -215,7 +215,7 @@ end
 local function handle_horizontal_rule()
   return pandoc.RawBlock(
     "latex",
-    "\\ifcsname netraDivider\\endcsname\\netraDivider\\else\\par\\noindent\\rule{\\linewidth}{0.4pt}\\par\\fi"
+    "\\ifcsname mdtexDivider\\endcsname\\mdtexDivider\\else\\par\\noindent\\rule{\\linewidth}{0.4pt}\\par\\fi"
   )
 end
 
@@ -247,19 +247,19 @@ end
 
 function Pandoc(doc)
   local meta = doc.meta
-  local value = meta["netra-landscape-tables"]
+  local value = meta["md2tex-landscape-tables"] or meta["netra-landscape-tables"]
   if value then landscape_mode = meta_to_string(value) end
 
-  local wrap = meta["netra-wrap-tables"]
+  local wrap = meta["md2tex-wrap-tables"] or meta["netra-wrap-tables"]
   if wrap ~= nil then
     local raw = meta_to_string(wrap):lower()
     wrap_tables = not (raw == "false" or raw == "0" or raw == "no")
   end
 
-  local font = meta["netra-table-font"]
+  local font = meta["md2tex-table-font"] or meta["netra-table-font"]
   if font then table_font = meta_to_string(font) end
 
-  local width = meta["netra-table-width"]
+  local width = meta["md2tex-table-width"] or meta["netra-table-width"]
   if width then table_width = meta_to_string(width) end
 
   -- Primeiro transforma imagens de bloco em figuras completas. Depois trata

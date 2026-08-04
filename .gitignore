@@ -1,5 +1,5 @@
 # ==============================================================================
-# .gitignore - netra-md2tex
+# .gitignore - md2tex
 # Configuração para ignorar arquivos temporários, de compilação, ambientes e IDEs.
 # ==============================================================================
 
@@ -51,7 +51,7 @@ htmlcov/
 *.vrb
 _minted-*/
 
-# --- Arquivos Temporários de Build do netra-md2tex ---
+# --- Arquivos Temporários de Build do md2tex ---
 .*-build/
 
 # --- PDFs Gerados de Saída ---
