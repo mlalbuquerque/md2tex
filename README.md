@@ -149,7 +149,123 @@ md2tex --help
 
 ---
 
-## 5. Uso Básico e Exemplo Completo
+## 5. Arquivo de Configuração do Usuário (`config.yaml`)
+
+O `md2tex` utiliza um arquivo YAML centralizado para definir todas as preferências de estilo, pacotes `.sty`, geometrias de página e opções do compilador TeX sem depender de padrões fixados no código-fonte.
+
+### Localização Padrão nos Sistemas Operacionais
+
+| Sistema Operacional | Caminho do Arquivo de Configuração |
+|---|---|
+| **Linux** | `~/.config/md2tex/config.yaml` (ex: `/home/usuario/.config/md2tex/config.yaml`) |
+| **macOS** | `~/.config/md2tex/config.yaml` (ex: `/Users/usuario/.config/md2tex/config.yaml`) |
+| **Windows** | `%USERPROFILE%\.config\md2tex\config.yaml` (ex: `C:\Users\usuario\.config\md2tex\config.yaml`) |
+
+### Como Criar o Arquivo de Configuração
+
+Você pode criar o diretório e copiar o modelo de exemplo executando os comandos abaixo:
+
+#### No Linux / macOS (Terminal):
+
+```bash
+mkdir -p ~/.config/md2tex
+cp examples/config.yaml ~/.config/md2tex/config.yaml
+```
+
+#### No Windows (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Path "$HOME\.config\md2tex" -Force
+Copy-Item -Path "examples\config.yaml" -Destination "$HOME\.config\md2tex\config.yaml"
+```
+
+---
+
+### Detalhamento Completo das Opções Suportadas
+
+#### 1. Classe do Documento (`document_class` e `class_options`)
+- **`document_class`** *(string)*: Define a classe base da estrutura LaTeX.
+  - *Valores comuns*: `article` (artigos e documentos curtos), `report` (relatórios longos com capítulos), `book` (livros), `scrartcl` (KOMA-Script moderno).
+- **`class_options`** *(lista de strings)*: Parâmetros globais repassados para a classe.
+  - *Tamanho da Fonte*: `10pt`, `11pt`, `12pt`.
+  - *Formato do Papel*: `a4paper`, `letterpaper`, `executivepaper`.
+  - *Layout e Colunas*: `portrait`, `landscape`, `onecolumn`, `twocolumn`, `oneside`, `twoside`.
+  - *Outros*: `draft`, `final`.
+- 🔗 **Link de Apoio**: [Overleaf Guide: Creating a document in LaTeX](https://www.overleaf.com/learn/latex/Creating_a_document_in_LaTeX)
+
+#### 2. Pacotes de Estilo (`style_packages` e `--style-path`)
+- **`style_packages`** *(lista de strings)*: Injeta diretivas `\usepackage{...}` no preâmbulo. Aceita tanto pacotes da sua distribuição TeX (`microtype`, `enumitem`, `tcolorbox`, `fancyhdr`) quanto caminhos para arquivos `.sty` locais (`./estilos/meu-estilo.sty`).
+- **Guia Prático: Como Criar seu Próprio Pacote de Estilo (`.sty`)**:
+  Crie um arquivo em `./estilos/meu-estilo.sty` com a estrutura abaixo:
+  ```latex
+  \NeedsTeXFormat{LaTeX2e}
+  \ProvidesPackage{meu-estilo}[2026/08/04 Pacote de Estilo Personalizado]
+
+  % Carregamento de pacotes base
+  \RequirePackage{xcolor}
+  \RequirePackage{fancyhdr}
+
+  % Configuração de cabeçalho e rodapé
+  \pagestyle{fancy}
+  \fancyhf{}
+  \rhead{\small Meu Documento}
+  \lfoot{\small Confidencial}
+  \rfoot{\thepage}
+
+  % Cores personalizadas
+  \definecolor{corPrincipal}{RGB}{0, 102, 204}
+  ```
+  No seu `config.yaml`, basta adicionar:
+  ```yaml
+  style_packages:
+    - ./estilos/meu-estilo.sty
+  ```
+- 🔗 **Link de Apoio**: [Overleaf Guide: Writing your own package (.sty)](https://www.overleaf.com/learn/latex/Writing_your_own_package)
+
+#### 3. Geometria da Página e Margens (`page_geometry`)
+- **`page_geometry`** *(dicionário de chave/valor)*: Repassa opções diretamente ao pacote `geometry`.
+  - `top`, `bottom`, `left`, `right` (ex: `2.5cm`, `1in`, `20mm`).
+  - `margin` (ex: `2cm` para todas as margens).
+  - `headheight`, `headsep`, `footskip` (ajustes finos de cabeçalho e rodapé).
+- 🔗 **Links de Apoio**: [CTAN: geometry Package](https://ctan.org/pkg/geometry) e [Overleaf Guide: Page size and margins](https://www.overleaf.com/learn/latex/Page_size_and_margins)
+
+#### 4. Tipografia e Idiomas (`typography`)
+- **`typography`** *(dicionário de chave/valor)*:
+  - `language`: Define o idioma padrão para o pacote `babel`/`polyglossia` (ex: `portuguese`, `brazil`, `english`, `spanish`).
+  - `fontsize`: Tamanho padrão do texto (ex: `11pt`, `12pt`).
+- 🔗 **Links de Apoio**: [Overleaf Guide: Font typefaces](https://www.overleaf.com/learn/latex/Font_typefaces) e [Overleaf Guide: International language support](https://www.overleaf.com/learn/latex/International_language_support)
+
+#### 5. Código Bruto no Preâmbulo (`preamble_includes`)
+- **`preamble_includes`** *(lista de strings)*: Códigos LaTeX injetados diretamente antes de `\begin{document}`.
+  - *Exemplo*:
+    ```yaml
+    preamble_includes:
+      - '\setlength{\parindent}{0pt}'
+      - '\setlength{\parskip}{6pt}'
+      - '\linespread{1.15}'
+    ```
+
+#### 6. Compilador TeX Padrão (`compiler_options`)
+- **`compiler_options`** *(dicionário)*:
+  - `engine`: Define o motor compilador padrão ao usar `--pdf`.
+    - `pdflatex`: Compilador padrão rápido (recomendado para a maioria dos documentos).
+    - `xelatex`: Suporte nativo a fontes TrueType/OpenType (`.ttf`/`.otf`) instaladas no sistema e caracteres Unicode.
+    - `lualatex`: Compilador moderno com suporte a scripts Lua incorporados.
+- 🔗 **Link de Apoio**: [Overleaf Guide: Choosing a LaTeX Compiler](https://www.overleaf.com/learn/latex/Choosing_a_LaTeX_compiler)
+
+---
+
+### Especificando um Arquivo de Configuração Customizado (`-c` / `--config`)
+
+Caso queira utilizar um arquivo de configuração específico para um projeto em vez do global, utilize a flag `-c` ou `--config`:
+
+```bash
+md2tex documento.md --config ./meu-projeto-config.yaml --pdf
+```
+
+---
+
+## 6. Uso Básico e Exemplo Completo
 
 ### Uso Básico
 
@@ -185,7 +301,7 @@ md2tex documento.md \
 
 ---
 
-## 6. Perfis Documentais
+## 7. Perfis Documentais
 
 A ferramenta possui 4 perfis pré-configurados que utilizam templates específicos localizados em `src/md2tex/templates/`:
 
@@ -208,7 +324,7 @@ A ferramenta possui 4 perfis pré-configurados que utilizam templates específic
 
 ---
 
-## 7. Metadados YAML e Precedência
+## 8. Metadados YAML e Precedência
 
 Você pode definir metadados no topo do arquivo Markdown utilizando YAML Front Matter:
 
@@ -247,7 +363,7 @@ md2tex documento.md \
 
 ---
 
-## 8. Folhas de Estilo Personalizadas e Portabilidade (`--style-path`)
+## 9. Folhas de Estilo Personalizadas e Portabilidade (`--style-path`)
 
 A opção `--style-path` permite especificar **qualquer pacote ou arquivo de estilo LaTeX (`.sty`)**, em estilos genéricos e personalizados.
 
@@ -278,7 +394,7 @@ A ferramenta foi projetada com fallbacks universais para garantir que a convers�
 
 ---
 
-## 9. Sintaxe Markdown e Conversão LaTeX
+## 10. Sintaxe Markdown e Conversão LaTeX
 
 ### Títulos e Numeração Manual
 
@@ -371,7 +487,7 @@ Flags de formato Mermaid: `--mermaid-format png` *(padrão)*, `pdf` ou `svg`. Pa
 
 ---
 
-## 10. Geração de PDF e Limpeza
+## 11. Geração de PDF e Limpeza
 
 ### Motores de Compilação
 
@@ -394,7 +510,7 @@ Utilize `--keep-build` para preservar a pasta temporária `.documento-build/`, c
 
 ---
 
-## 11. Validação e Modo Estrito
+## 12. Validação e Modo Estrito
 
 A validação é ativada por padrão (`--validate`):
 - Verifica preenchimento de título e metadados obrigatórios.
@@ -414,7 +530,7 @@ No modo estrito (`--strict`), qualquer inconsistência ou aviso de validação f
 
 ---
 
-## 12. Templates Jinja2 Personalizados
+## 13. Templates Jinja2 Personalizados
 
 É possível fornecer um template Jinja2 customizado com `--template meu_template.tex.j2`.
 
@@ -427,7 +543,7 @@ Variáveis expostas no contexto: `metadata`, `body`, `style_path`, `toc`, `engin
 
 ---
 
-## 13. Referência de Opções do CLI
+## 14. Referência de Opções do CLI
 
 ```text
 Usage: md2tex [OPTIONS] INPUT_FILE
@@ -469,14 +585,15 @@ Options:
 
 ---
 
-## 14. Estrutura do Projeto
+## 15. Estrutura do Projeto
 
 ```text
 md2tex/
 ├── bin/
 │   └── md2tex                    # Script executável direto
-├── examples/                      # Exemplo de documentos em Markdown
+├── examples/                      # Exemplo de documentos e configurações
 │   ├── adr.md
+│   ├── config.yaml
 │   └── relatorio.md
 ├── src/md2tex/                   # Código-fonte principal
 │   ├── filters/
@@ -508,7 +625,7 @@ md2tex/
 
 ---
 
-## 15. Desenvolvimento, Testes e Licença
+## 16. Desenvolvimento, Testes e Licença
 
 ### Execução dos Testes Automatizados
 

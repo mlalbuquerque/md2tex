@@ -1,0 +1,92 @@
+# ==============================================================================
+# md2tex - Arquivo de Configuração do Usuário
+# ==============================================================================
+# Localização padrão por sistema operacional:
+# - Linux: ~/.config/md2tex/config.yaml
+# - macOS: ~/.config/md2tex/config.yaml
+# - Windows: C:\Users\<usuario>\.config\md2tex\config.yaml
+#
+# Para usar um arquivo de configuração customizado por projeto:
+#   md2tex documento.md --config ./meu-config-projeto.yaml
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Classe do Documento LaTeX (document_class)
+# ------------------------------------------------------------------------------
+# Classe principal do LaTeX que define a estrutura base do documento.
+# Opções comuns: article, report, book, scrartcl (KOMA-Script), memoir.
+document_class: article
+
+# ------------------------------------------------------------------------------
+# 2. Opções da Classe do Documento (class_options)
+# ------------------------------------------------------------------------------
+# Lista de parâmetros globais passados para a \documentclass[...]{...}.
+# Exemplos de valores aceitos:
+#   - Tamanho da fonte: 10pt, 11pt, 12pt
+#   - Papel: a4paper, letterpaper, executivepaper
+#   - Colunas: onecolumn, twocolumn
+#   - Orientação: portrait, landscape
+#   - Impressão: oneside, twoside
+#   - Outros: draft, final
+class_options:
+  - 11pt
+  - a4paper
+
+# ------------------------------------------------------------------------------
+# 3. Pacotes de Estilo TeX (.sty) (style_packages)
+# ------------------------------------------------------------------------------
+# Lista de pacotes LaTeX a serem carregados no preâmbulo via \usepackage{...}.
+# Podem ser pacotes instalados na sua distribuição TeX (ex: microtype, enumitem)
+# ou caminhos para arquivos .sty personalizados/locais (ex: ./estilos/meu-estilo.sty).
+style_packages:
+  - graphicx
+  - hyperref
+  - enumitem
+  - microtype
+
+# ------------------------------------------------------------------------------
+# 4. Geometria da Página e Margens (page_geometry)
+# ------------------------------------------------------------------------------
+# Dicionário de opções repassadas diretamente ao pacote LaTeX 'geometry'.
+# Propriedades comuns:
+#   - top: Margem superior (ex: 2.5cm, 1in)
+#   - bottom: Margem inferior (ex: 2.5cm, 1in)
+#   - left / hmargin: Margem esquerda (ex: 3.0cm)
+#   - right: Margem direita (ex: 3.0cm)
+#   - headheight, headsep, footskip: Ajustes de cabeçalho e rodapé
+page_geometry:
+  top: 2.5cm
+  bottom: 2.5cm
+  left: 3.0cm
+  right: 3.0cm
+
+# ------------------------------------------------------------------------------
+# 5. Tipografia e Idioma (typography)
+# ------------------------------------------------------------------------------
+# Configurações de idioma e padrão de fontes do documento.
+#   - language: portuguese, brazil, english, spanish (usado pelo babel/polyglossia)
+#   - fontsize: 11pt, 12pt
+typography:
+  language: portuguese
+  fontsize: 11pt
+
+# ------------------------------------------------------------------------------
+# 6. Comandos Brutos de Preâmbulo (preamble_includes)
+# ------------------------------------------------------------------------------
+# Lista de linhas de código TeX injetadas diretamente no preâmbulo antes do \begin{document}.
+# Útil para definir espaçamentos, macros personalizadas, cores ou pacotes adicionais.
+preamble_includes:
+  - '\setlength{\parindent}{0pt}'
+  - '\setlength{\parskip}{6pt}'
+  - '\linespread{1.15}'
+
+# ------------------------------------------------------------------------------
+# 7. Opções do Compilador TeX (compiler_options)
+# ------------------------------------------------------------------------------
+# Define o motor compilador padrão para geração de PDFs (--pdf).
+# Opções suportadas:
+#   - pdflatex : Rápido e padrão (suporte a fontes Type1/OTF padrão)
+#   - xelatex  : Suporte nativo a fontes TTF/OTF instaladas no SO e Unicode
+#   - lualatex : Compilador moderno com suporte a scripts Lua incorporados
+compiler_options:
+  engine: pdflatex

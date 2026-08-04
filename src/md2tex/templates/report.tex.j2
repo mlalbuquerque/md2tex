@@ -10,6 +10,14 @@
 \usepackage{((* pkg[:-4] if pkg.endswith('.sty') else pkg *))}
 ((% endfor %))
 ((% endif %))
+((% if user_config and user_config.page_geometry %))
+\usepackage[((% for key, val in user_config.page_geometry.items() %))((* key *))=((* val *))((% if not loop.last %)),((% endif %))((% endfor %))]{geometry}
+((% endif %))
+((% if user_config and user_config.preamble_includes %))
+((% for line in user_config.preamble_includes %))
+((* line *))
+((% endfor %))
+((% endif %))
 
 \makeatletter
 ((% if engine in ["xelatex", "lualatex"] %))
