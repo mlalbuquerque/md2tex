@@ -104,9 +104,54 @@ mmdc --version
 
 ## 4. Instalação
 
-### Opção A: Ambiente Virtual (Desenvolvimento / Uso Local)
+### Opção A: Instalação via `pipx` (Recomendado para Python)
 
-Na raiz do repositório:
+O `pipx` permite instalar o `md2tex` em um ambiente isolado disponibilizando o comando globalmente no PATH do seu usuário.
+
+1. Instale o `pipx` (caso ainda não possua):
+   ```bash
+   sudo apt update
+   sudo apt install -y pipx
+   pipx ensurepath
+   source ~/.bashrc
+   ```
+
+2. **Instalação da pasta local**:
+   ```bash
+   pipx install .
+   ```
+
+3. **Instalação da versão mais recente direto do GitHub**:
+   ```bash
+   pipx install git+https://github.com/mlalbuquerque/md2tex.git
+   ```
+
+*(Para atualizar ou reinstalar a qualquer momento, utilize o argumento `--force`: `pipx install --force .`)*
+
+---
+
+### Opção B: Executáveis Autônomos (Releases no GitHub)
+
+Se preferir utilizar a ferramenta sem precisar configurar um ambiente Python, você pode baixar o executável binário estático pré-compilado para o seu sistema operacional na aba de **Releases** do repositório no GitHub:
+
+- **Linux**: `md2tex-linux-amd64`
+- **macOS**: `md2tex-macos-amd64` / `md2tex-macos-arm64`
+- **Windows**: `md2tex-windows-amd64.exe`
+
+#### Instalação no Linux / macOS:
+
+1. Baixe o executável correspondente da página de Releases.
+2. Conceda permissão de execução e mova para o PATH do sistema:
+   ```bash
+   chmod +x md2tex-linux-amd64
+   sudo mv md2tex-linux-amd64 /usr/local/bin/md2tex
+   ```
+
+---
+
+### Opção C: Ambiente Virtual (Desenvolvimento / Uso Local)
+
+Para quem deseja contribuir ou modificar o código-fonte em um ambiente virtual Python:
 
 ```bash
 python3 -m venv .venv
@@ -115,30 +160,13 @@ pip install --upgrade pip
 pip install .
 ```
 
-Para instalar com dependências de desenvolvimento e testes:
+Para instalar com as dependências de desenvolvimento e suíte de testes (`pytest`, `ruff`):
 
 ```bash
 pip install -e ".[dev]"
 ```
 
-### Opção B: Instalação via `pipx` (Recomendado no Ubuntu 24.04+ / PEP 668)
-
-O `pipx` permite instalar o pacote em um ambiente isolado disponibilizando o executável `md2tex` globalmente no PATH do usuário.
-
-1. Instale o `pipx`:
-   ```bash
-   sudo apt update
-   sudo apt install -y pipx
-   pipx ensurepath
-   source ~/.bashrc
-   ```
-
-2. Instale o pacote a partir do Wheel gerado:
-   ```bash
-   pipx install ./dist/md2tex-1.2.1-py3-none-any.whl
-   ```
-
-   *(Para atualizar ou sobrescrever uma instalação prévia, utilize `pipx install --force ...`)*
+---
 
 ### Testando a Instalação
 
