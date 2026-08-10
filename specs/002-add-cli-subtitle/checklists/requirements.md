@@ -1,16 +1,12 @@
-# Arquivo histórico
-
-Este checklist preserva a nomenclatura do baseline anterior ao md2tex.
-
-# Specification Quality Checklist: 000-primeira-versao
+# Specification Quality Checklist: Adicionar subtítulo pela CLI
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-08-02
-**Feature**: [spec.md](file:///home/mlalbuquerque/Dropbox/Netra/projetos/md2tex/app/specs/000-primeira-versao/spec.md)
+**Created**: 2026-08-10
+**Feature**: [spec.md](../spec.md)
 
 ## Content Quality
 
-- [x] No implementation details (languages, frameworks, APIs) in user stories
+- [x] No implementation details (languages, frameworks, APIs)
 - [x] Focused on user value and business needs
 - [x] Written for non-technical stakeholders
 - [x] All mandatory sections completed
@@ -33,6 +29,3 @@ Este checklist preserva a nomenclatura do baseline anterior ao md2tex.
 - [x] Feature meets measurable outcomes defined in Success Criteria
 - [x] No implementation details leak into specification
 
-## Notes
-
-- A especificação reflete fielmente o estado baseline completo da aplicação `netra-md2tex` na versão atual (1.2.0).

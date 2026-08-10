@@ -7,13 +7,16 @@ from typing import Any
 
 @dataclass(slots=True)
 class UserConfig:
-    document_class: str = "article"
-    class_options: list[str] = field(default_factory=lambda: ["11pt", "a4paper"])
-    style_packages: list[str] = field(default_factory=list)
-    page_geometry: dict[str, Any] = field(default_factory=dict)
-    typography: dict[str, Any] = field(default_factory=dict)
-    preamble_includes: list[str] = field(default_factory=list)
-    compiler_options: dict[str, Any] = field(default_factory=lambda: {"engine": "pdflatex"})
+    """Configuração explícita do usuário, sem valores de estilo implícitos."""
+
+    document_class: str
+    class_options: list[str]
+    style_packages: list[str]
+    page_geometry: dict[str, str]
+    typography: dict[str, str]
+    preamble_includes: list[str]
+    compiler_options: dict[str, str]
+    tables: dict[str, str | bool]
 
 
 @dataclass(slots=True)
@@ -36,23 +39,25 @@ class ConversionOptions:
     config_path: Path | None = None
     user_config: UserConfig | None = None
     profile: str = "default"
-    style_path: str | None = None
     figures_dir: Path = Path("figures")
     template_path: Path | None = None
     generate_pdf: bool = False
     validate: bool = True
     strict: bool = False
     toc: bool = True
-    engine: str = "pdflatex"
+    engine: str = ""
     mermaid: bool = True
     mermaid_format: str = "png"
     landscape_tables: str = "auto"
-    table_font: str = "small"
-    table_width: str = "auto"
+    table_font: str = ""
+    table_width: str = ""
+    table_borders: str = ""
+    table_zebra: bool | None = None
     keep_build: bool = False
     force: bool = False
     verbose: bool = False
     title: str | None = None
+    subtitle: str | None = None
     author: str | None = None
     date: str | None = None
     document_version: str | None = None

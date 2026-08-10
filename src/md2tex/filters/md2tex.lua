@@ -4,6 +4,7 @@ local landscape_mode = "auto"
 local wrap_tables = true
 local table_font = "small"
 local table_width = "auto"
+local table_zebra = false
 
 local function meta_to_string(value)
   if value == nil then return "" end
@@ -116,6 +117,17 @@ local function handle_code(code)
   if rendered then return pandoc.RawInline("latex", rendered) end
 end
 
+local function handle_raw_inline(raw)
+  -- Escape textual control markers while preserving genuine raw TeX commands.
+  if raw.format ~= "tex" and raw.format ~= "latex" then return nil end
+  if raw.text == "\\r\\n" then
+    return pandoc.RawInline("latex", "\\textbackslash{}r\\textbackslash{}n")
+  end
+  if raw.text == "\\r" or raw.text == "\\n" or raw.text == "\\t" then
+    return pandoc.RawInline("latex", "\\textbackslash{}" .. raw.text:sub(2))
+  end
+end
+
 local function handle_table(tbl)
   tbl = apply_widths(tbl)
   local columns = #tbl.colspecs
@@ -128,7 +140,7 @@ local function handle_table(tbl)
   if table_font ~= "normalsize" then
     table.insert(before, pandoc.RawBlock("latex", "\\" .. table_font))
   end
-  if wrap_tables then
+  if wrap_tables and table_zebra then
     table.insert(before, pandoc.RawBlock("latex", "\\mdtexStartTable"))
     table.insert(after, 1, pandoc.RawBlock("latex", "\\mdtexEndTable"))
   end
@@ -247,20 +259,26 @@ end
 
 function Pandoc(doc)
   local meta = doc.meta
-  local value = meta["md2tex-landscape-tables"] or meta["netra-landscape-tables"]
+  local value = meta["md2tex-landscape-tables"]
   if value then landscape_mode = meta_to_string(value) end
 
-  local wrap = meta["md2tex-wrap-tables"] or meta["netra-wrap-tables"]
+  local wrap = meta["md2tex-wrap-tables"]
   if wrap ~= nil then
     local raw = meta_to_string(wrap):lower()
     wrap_tables = not (raw == "false" or raw == "0" or raw == "no")
   end
 
-  local font = meta["md2tex-table-font"] or meta["netra-table-font"]
+  local font = meta["md2tex-table-font"]
   if font then table_font = meta_to_string(font) end
 
-  local width = meta["md2tex-table-width"] or meta["netra-table-width"]
+  local width = meta["md2tex-table-width"]
   if width then table_width = meta_to_string(width) end
+
+  local zebra = meta["md2tex-table-zebra"]
+  if zebra ~= nil then
+    local raw = meta_to_string(zebra):lower()
+    table_zebra = raw == "true" or raw == "1" or raw == "yes"
+  end
 
   -- Primeiro transforma imagens de bloco em figuras completas. Depois trata
   -- imagens realmente inline, evitando que o walker converta a imagem antes
@@ -268,6 +286,7 @@ function Pandoc(doc)
   doc = doc:walk({Para = handle_image_paragraph})
   return doc:walk({
     Code = handle_code,
+    RawInline = handle_raw_inline,
     Image = handle_inline_image,
     CodeBlock = handle_code_block,
     Table = handle_table,

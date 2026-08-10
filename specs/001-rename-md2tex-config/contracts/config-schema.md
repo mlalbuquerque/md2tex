@@ -1,52 +1,18 @@
-# Interface Contract: md2tex Configuration YAML Schema
+# Configuration Contract: md2tex 2.2.0
 
-**Feature**: `001-rename-md2tex-config`  
-**Date**: 2026-08-03  
-**Spec**: [spec.md](file:///home/mlalbuquerque/Dropbox/Netra/projetos/md2tex/app/specs/001-rename-md2tex-config/spec.md)
+O YAML exige todas as chaves de topo: `document_class`, `class_options`, `style_packages`, `page_geometry`, `typography`, `preamble_includes` e `compiler_options` e `tables`.
 
-## User Configuration File (`~/.config/md2tex/config.yaml`)
+`typography.fontsize` é obrigatório. As chaves permitidas em `typography` são `language`, `fontsize`, `mainfont` e `line_spacing`. `compiler_options` contém exclusivamente `engine`, com valor `pdflatex`, `xelatex` ou `lualatex`.
 
-### Full Example Specification
+Use `md2tex init` para obter o modelo completo e válido.
+
+## Tables
 
 ```yaml
-# md2tex Configuration File
-# Location: ~/.config/md2tex/config.yaml
-
-document_class: article
-class_options:
-  - 11pt
-  - a4paper
-
-# List of .sty style packages or local .sty file paths to include in the preamble
-style_packages:
-  - graphicx
-  - hyperref
-  - geometry
-
-# Page geometry options passed to \geometry{}
-page_geometry:
-  margin: 2.5cm
-  top: 3cm
-  bottom: 3cm
-
-# Typography and language options
-typography:
-  language: portuguese
-  fontsize: 11pt
-
-# Direct preamble code additions
-preamble_includes:
-  - '\setlength{\parindent}{0pt}'
-  - '\setlength{\parskip}{6pt}'
-
-# Compiler engine default
-compiler_options:
-  engine: pdflatex
+tables:
+  landscape: auto # auto | always | never
+  font: small # normalsize | small | footnotesize | scriptsize
+  width: auto # auto | equal | natural
+  borders: none # none | outer | grid
+  zebra: false
 ```
-
-### Schema Validation Rules
-
-1. `document_class`: Must be a valid non-empty string.
-2. `style_packages`: List of strings representing LaTeX package names or `.sty` relative/absolute paths.
-3. `preamble_includes`: List of strings representing raw TeX statements.
-4. `compiler_options.engine`: Must be one of `["pdflatex", "xelatex", "lualatex"]`.

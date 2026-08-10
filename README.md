@@ -179,7 +179,7 @@ md2tex --help
 
 ## 5. Arquivo de Configuração do Usuário (`config.yaml`)
 
-O `md2tex` utiliza um arquivo YAML centralizado para definir todas as preferências de estilo, pacotes `.sty`, geometrias de página e opções do compilador TeX sem depender de padrões fixados no código-fonte.
+O `md2tex` utiliza um arquivo YAML centralizado para definir todas as preferências de estilo, pacotes `.sty`, geometrias de página e opções do compilador TeX sem defaults de estilo ou compilação no código-fonte.
 
 ### Localização Padrão nos Sistemas Operacionais
 
@@ -191,21 +191,20 @@ O `md2tex` utiliza um arquivo YAML centralizado para definir todas as preferênc
 
 ### Como Criar o Arquivo de Configuração
 
-Você pode criar o diretório e copiar o modelo de exemplo executando os comandos abaixo:
-
-#### No Linux / macOS (Terminal):
+Crie uma configuração válida com o comando abaixo:
 
 ```bash
-mkdir -p ~/.config/md2tex
-cp examples/config.yaml ~/.config/md2tex/config.yaml
+md2tex init
+
+# ou, para um projeto específico
+md2tex init --config ./md2tex.yaml
 ```
 
-#### No Windows (PowerShell):
+O comando não sobrescreve uma configuração existente; use `md2tex init --force` somente quando desejar substituí-la.
 
-```powershell
-New-Item -ItemType Directory -Path "$HOME\.config\md2tex" -Force
-Copy-Item -Path "examples\config.yaml" -Destination "$HOME\.config\md2tex\config.yaml"
-```
+### Arquivos `.sty` que controlam pacotes
+
+Se um `.sty` já carregar `geometry`, defina `page_geometry: {}` e deixe as margens no próprio estilo. Se ele carregar um pacote com opções (por exemplo, `\RequirePackage[table]{xcolor}`), remova esse pacote de `style_packages`. O md2tex valida esses conflitos antes de iniciar o LaTeX e informa a correção sugerida.
 
 ---
 
@@ -221,8 +220,8 @@ Copy-Item -Path "examples\config.yaml" -Destination "$HOME\.config\md2tex\config
   - *Outros*: `draft`, `final`.
 - 🔗 **Link de Apoio**: [Overleaf Guide: Creating a document in LaTeX](https://www.overleaf.com/learn/latex/Creating_a_document_in_LaTeX)
 
-#### 2. Pacotes de Estilo (`style_packages` e `--style-path`)
-- **`style_packages`** *(lista de strings)*: Injeta diretivas `\usepackage{...}` no preâmbulo. Aceita tanto pacotes da sua distribuição TeX (`microtype`, `enumitem`, `tcolorbox`, `fancyhdr`) quanto caminhos para arquivos `.sty` locais (`./estilos/meu-estilo.sty`).
+#### 2. Pacotes de Estilo (`style_packages` e `--style`)
+- **`style_packages`** *(lista de strings)*: Injeta diretivas `\usepackage{...}` no preâmbulo. A flag `--style` substitui esta lista para a execução; repita-a para declarar todos os pacotes necessários. Aceita tanto pacotes da sua distribuição TeX (`microtype`, `enumitem`, `tcolorbox`, `fancyhdr`) quanto caminhos para arquivos `.sty` locais (`./estilos/meu-estilo.sty`).
 - **Guia Prático: Como Criar seu Próprio Pacote de Estilo (`.sty`)**:
   Crie um arquivo em `./estilos/meu-estilo.sty` com a estrutura abaixo:
   ```latex
@@ -282,6 +281,21 @@ Copy-Item -Path "examples\config.yaml" -Destination "$HOME\.config\md2tex\config
 - 🔗 **Link de Apoio**: [Overleaf Guide: Choosing a LaTeX Compiler](https://www.overleaf.com/learn/latex/Choosing_a_LaTeX_compiler)
 
 ---
+
+### Tabelas (`tables`)
+
+A seção `tables` controla o comportamento padrão das tabelas:
+
+```yaml
+tables:
+  landscape: auto
+  font: small
+  width: auto
+  borders: none # none, outer ou grid
+  zebra: false
+```
+
+`grid` desenha contornos externos e internos; `outer` desenha somente o contorno externo. `zebra: true` chama `\mdtexStartTable` e `\mdtexEndTable`, permitindo que um `.sty` defina as cores alternadas. As opções `--landscape-tables`, `--table-font`, `--table-width`, `--table-borders` e `--table-zebra` sobrescrevem estes valores para uma execução.
 
 ### Especificando um Arquivo de Configuração Customizado (`-c` / `--config`)
 
@@ -374,6 +388,8 @@ status: Em revisão
 Caso um parâmetro seja informado em múltiplos lugares, a ordem de prioridade (da maior para a menor) é:
 
 1. **Argumentos da CLI** (`--title`, `--author`, etc.)
+
+A opção `--subtitle` sobrescreve o subtítulo do front matter; se for omitida, o valor do front matter é preservado. Um valor vazio deixa a capa sem subtítulo.
 2. **YAML Front Matter** do arquivo Markdown
 3. **Primeiro cabeçalho `# H1`** do documento Markdown
 4. **Nome do arquivo** (fallback)
@@ -383,6 +399,7 @@ Exemplo de sobrescrita de metadados pela CLI:
 ```bash
 md2tex documento.md \
   --title "Título Definitivo" \
+  --subtitle "Subtítulo Definitivo" \
   --author "Sua Empresa" \
   --date 2026-07-30 \
   --document-version "1.1" \
@@ -391,31 +408,29 @@ md2tex documento.md \
 
 ---
 
-## 9. Folhas de Estilo Personalizadas e Portabilidade (`--style-path`)
+## 9. Folhas de Estilo Personalizadas e Portabilidade (`--style`)
 
-A opção `--style-path` permite especificar **qualquer pacote ou arquivo de estilo LaTeX (`.sty`)**, em estilos genéricos e personalizados.
+A opção `--style` permite substituir, para uma execução, a lista `style_packages` por **qualquer pacote ou arquivo de estilo LaTeX (`.sty`)**. Repita a flag para informar todos os pacotes necessários.
 
-### Suporte a Estilos Genéricos e Fallbacks
+### Configuração Explícita
 
-A ferramenta foi projetada com fallbacks universais para garantir que a conversão funcione com qualquer estilo `.sty`:
+O md2tex não adiciona pacotes, idioma, macros ou defaults de estilo automaticamente. O arquivo criado por `md2tex init` contém um perfil inicial completo; personalize-o conforme a sua distribuição TeX e o seu documento.
 
-- **Compatibilidade Global**: O cabeçalho do documento injeta a diretiva `\usepackage{<style_path>}`.
-- **Fallbacks Nativos (`\providecommand`)**: Os templates fornecem implementações padrão seguras para comandos internos (como `\mdtexStartTable`, `\mdtexEndTable`, `\mdtexTableOfContents` e `\mdtexDivider`). Se o seu `.sty` os definir, o seu estilo personalizado terá prioridade; caso contrário, os fallbacks padrão do LaTeX serão usados sem gerar erros.
-- **Inclusão Segura de Pacotes (`\@ifpackageloaded`)**: Todos os pacotes essenciais para renderização (tabelas, imagens, caixas anotadas, links, código inline) são carregados condicionalmente, evitando conflitos de pacotes duplicados com a sua folha de estilo.
+Tabelas com largura automática usam `calc`; mantenha `calc` em `style_packages`, a menos que o seu `.sty` já o carregue.
 
-### Formas de Uso da Flag `--style-path`
+### Formas de Uso da Flag `--style`
 
 1. **Caminho Relativo ou Absoluto**:
    ```bash
-   md2tex documento.md --style-path ./estilos/meu-estilo-customizado
+   md2tex documento.md --style calc --style ./estilos/meu-estilo-customizado
    ```
 2. **Nome de Pacote Instalado no Sistema TeX**:
    ```bash
-   md2tex documento.md --style-path meu-pacote-tex
+   md2tex documento.md --style meu-pacote-tex
    ```
 3. **Estilo Customizado**:
    ```bash
-   md2tex documento.md --style-path ./estilos/meu-estilo
+   md2tex documento.md --style ./estilos/meu-estilo
    ```
 
 > **Nota de Sintaxe**: O parâmetro deve ser informado **sem a extensão `.sty`** (exemplo: `meu-estilo`), pois o LaTeX adiciona a extensão `.sty` automaticamente na diretiva `\usepackage{...}`. Em ambientes de CI/CD ou distribuição, você também pode especificar caminhos relativos ou utilizar a variável de ambiente `TEXINPUTS`.
@@ -581,11 +596,12 @@ Options:
   --type [report|meeting-minutes|adr|technical-plan]
                                      Perfil documental a ser utilizado.
   --title TEXT                       Título do documento.
+  --subtitle TEXT                    Subtítulo do documento.
   --author TEXT                      Autor do documento.
   --date TEXT                        Data do documento.
   --document-version TEXT            Versão do documento.
   --client TEXT                      Nome do cliente.
-  --style-path TEXT                  Caminho para o pacote de estilo (.sty).
+  --style TEXT                  Caminho para o pacote de estilo (.sty).
   --figures DIRECTORY                Diretório de saída para imagens e diagramas.
   --template FILE                    Template Jinja2 customizado (.tex.j2).
   --pdf / --no-pdf                   Habilita ou desabilita a compilação PDF.

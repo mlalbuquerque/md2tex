@@ -1,45 +1,29 @@
-# Interface Contract: md2tex CLI Command Schema
+# CLI Contract: md2tex 2.2.0
 
-**Feature**: `001-rename-md2tex-config`  
-**Date**: 2026-08-03  
-**Spec**: [spec.md](file:///home/mlalbuquerque/Dropbox/Netra/projetos/md2tex/app/specs/001-rename-md2tex-config/spec.md)
+## Synopsis
 
-## Command Line Interface (`md2tex`)
-
-### Synopsis
-
-```bash
+```text
 md2tex [OPTIONS] INPUT_FILE
+md2tex init [--config PATH] [--force]
 ```
 
-### Options
+## Relevant options
 
-| Flag | Short | Type | Description |
-|---|---|---|---|
-| `--output` | `-o` | `PATH` | Path to destination file (`.tex` or `.pdf`). Defaults to `INPUT_FILE` with `.tex` extension. |
-| `--config` | `-c` | `PATH` | Path to custom YAML configuration file. Defaults to `~/.config/md2tex/config.yaml`. |
-| `--style` | `-s` | `TEXT` | Additional `.sty` package to include (can be specified multiple times). |
-| `--engine` | `-e` | `CHOICE` | TeX compiler engine (`pdflatex`, `xelatex`, `lualatex`). |
-| `--pdf` | | `FLAG` | Compile generated `.tex` file directly to `.pdf`. |
-| `--version` | `-v` | `FLAG` | Show version and exit. |
-| `--help` | `-h` | `FLAG` | Show help message and exit. |
+| Flag | Short | Description |
+|---|---|---|
+| `--config` | `-c` | YAML explícito; padrão é o caminho do usuário |
+| `--style` | `-s` | Substitui `style_packages`; pode repetir para informar todos os pacotes |
+| `--engine` | `-e` | Sobrescreve o engine do YAML |
+| `--setup` | | Assistente de dependências |
+| `--check-deps` | | Relatório de dependências |
+| `--force` | | Sobrescreve TEX de saída ou YAML em `init` |
+| `--table-borders` | | Sobrescreve `tables.borders` |
+| `--table-zebra` / `--no-table-zebra` | | Sobrescreve `tables.zebra` |
+| `--verbose` | `-v` | Mostra comandos externos |
+| `--version` | | Exibe versão |
 
-### Exit Codes
+## Exit codes
 
-- `0`: Successful conversion.
-- `1`: Missing configuration file or malformed configuration YAML.
-- `2`: Invalid input file or filesystem error.
-- `3`: TeX compilation failure (when `--pdf` is active).
-
-### Examples
-
-```bash
-# Convert Markdown to LaTeX using user config (~/.config/md2tex/config.yaml)
-md2tex document.md -o document.tex
-
-# Convert Markdown to PDF with custom config file
-md2tex document.md -c ./my_project_config.yaml --pdf
-
-# Override style package via CLI
-md2tex document.md -s extra_style.sty -o document.tex
-```
+- `0`: sucesso.
+- `1`: erro de configuração ou conversão tratado pela aplicação.
+- `2`: uso inválido da CLI detectado pelo Click.

@@ -5,7 +5,6 @@ from pathlib import Path
 
 from .models import DocumentMetadata, ValidationMessage
 
-
 PLACEHOLDER_RE = re.compile(r"@@PH\d+@@")
 IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 HEADING_RE = re.compile(r"^(#{1,6})\s+", re.MULTILINE)
@@ -79,6 +78,17 @@ def validate_log(log_text: str) -> list[ValidationMessage]:
         for err in latex_errors[:5]:
             cleaned_err = " ".join(err.strip().splitlines())
             messages.append(ValidationMessage("error", f"Erro LaTeX: {cleaned_err}", "latex"))
+    option_clash = re.search(r"^! LaTeX Error: Option clash for package ([^.]+)\.", log_text, re.MULTILINE)
+    if option_clash:
+        package = option_clash.group(1)
+        messages.append(
+            ValidationMessage(
+                "error",
+                f"Configuração: conflito de opções no pacote {package}. Um arquivo .sty pode já carregá-lo; "
+                "remova o pacote duplicado de style_packages. Para geometry, use page_geometry: {} quando o .sty definir as margens.",
+                "latex",
+            )
+        )
     elif re.search(r"^! LaTeX Error:", log_text, re.MULTILINE):
         messages.append(ValidationMessage("error", "O log contém erro LaTeX.", "latex"))
 

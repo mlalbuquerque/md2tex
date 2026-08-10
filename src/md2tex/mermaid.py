@@ -8,7 +8,6 @@ from pathlib import Path
 from .models import ValidationMessage
 from .utils import executable, run_command
 
-
 MERMAID_RE = re.compile(
     r"(?ms)^```mermaid(?:\s+\{(?P<attrs>[^}]*)\})?\s*\n"
     r"(?P<code>.*?)\n```\s*$"

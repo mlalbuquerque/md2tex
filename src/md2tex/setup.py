@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import os
 import platform
 import shutil
 import subprocess
-import sys
 
 
 def check_dependencies() -> dict[str, dict[str, str | bool]]:
@@ -41,7 +39,7 @@ def print_dependency_report() -> None:
     """Imprime relatório amigável das dependências no terminal."""
     deps = check_dependencies()
     print("\n🔍 Relatório de Dependências do md2tex:\n" + "-" * 50)
-    for key, info in deps.items():
+    for info in deps.values():
         status = "✓ [OK]" if info["installed"] else "✗ [AUSENTE]"
         req = "Obrigatório" if info["required"] else "Opcional"
         print(f"{status:13} {info['name']} ({req})")
@@ -68,7 +66,7 @@ def install_tinytex() -> bool:
             return False
         print("✅ TinyTeX instalado com sucesso!")
         return True
-    except Exception as exc:
+    except (OSError, subprocess.SubprocessError) as exc:
         print(f"❌ Falha ao instalar TinyTeX: {exc}")
         return False
 
@@ -85,7 +83,7 @@ def install_mermaid() -> bool:
         subprocess.run([npm_path, "install", "-g", "@mermaid-js/mermaid-cli"], check=True)
         print("✅ Mermaid CLI instalado com sucesso!")
         return True
-    except Exception as exc:
+    except (OSError, subprocess.SubprocessError) as exc:
         print(f"❌ Falha ao instalar Mermaid CLI: {exc}")
         return False
 

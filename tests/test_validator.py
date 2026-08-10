@@ -1,4 +1,4 @@
-from md2tex.validator import has_errors, validate_tex, validate_log
+from md2tex.validator import has_errors, validate_log, validate_tex
 
 
 def test_detects_unresolved_placeholder():
@@ -19,3 +19,8 @@ def test_validate_log_extracts_latex_errors():
     assert has_errors(messages)
     assert "Undefined control sequence" in messages[0].message
 
+
+
+def test_validate_log_explains_package_option_clash():
+    messages = validate_log("! LaTeX Error: Option clash for package geometry.\n")
+    assert any("page_geometry: {}" in message.message for message in messages)

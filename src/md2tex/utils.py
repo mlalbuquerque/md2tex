@@ -3,11 +3,10 @@ from __future__ import annotations
 import re
 import shutil
 import subprocess
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from .errors import DependencyError, Md2TexError
-
 
 MANUAL_NUMBERING_RE = re.compile(
     r"^(?P<prefix>\s{0,3}#{1,6}\s+)"
@@ -45,8 +44,7 @@ def run_command(
         text=True,
         encoding="utf-8",
         errors="replace",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     if check and process.returncode != 0:
@@ -63,7 +61,7 @@ def strip_manual_heading_numbering(markdown: str) -> str:
     fence_token = ""
     for line in markdown.splitlines():
         stripped = line.lstrip()
-        if stripped.startswith("```") or stripped.startswith("~~~"):
+        if stripped.startswith(("```", "~~~")):
             token = stripped[:3]
             if not in_fence:
                 in_fence = True
@@ -91,7 +89,7 @@ def normalize_heading_levels(markdown: str) -> str:
 
     for line in lines:
         stripped = line.lstrip()
-        if stripped.startswith("```") or stripped.startswith("~~~"):
+        if stripped.startswith(("```", "~~~")):
             token = stripped[:3]
             if not in_fence:
                 in_fence = True
@@ -117,7 +115,7 @@ def normalize_heading_levels(markdown: str) -> str:
     fence_token = ""
     for line in lines:
         stripped = line.lstrip()
-        if stripped.startswith("```") or stripped.startswith("~~~"):
+        if stripped.startswith(("```", "~~~")):
             token = stripped[:3]
             if not in_fence:
                 in_fence = True

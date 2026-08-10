@@ -5,7 +5,8 @@ from importlib.resources import files
 from pathlib import Path
 
 from .compiler import clean_latex_auxiliary_files, compile_pdf
-from .errors import ValidationError
+from .config import available_style_packages
+from .errors import ConfigError, ValidationError
 from .frontmatter import parse_frontmatter
 from .mermaid import render_mermaid_blocks
 from .metadata import build_metadata
@@ -18,6 +19,8 @@ from .validator import has_errors, validate_markdown, validate_metadata, validat
 
 
 def convert(options: ConversionOptions) -> ConversionResult:
+    if options.user_config is None:
+        raise ConfigError("Uma configuração válida é obrigatória. Execute 'md2tex init' ou use --config.")
     if not options.input_path.exists():
         raise FileNotFoundError(f"Arquivo não encontrado: {options.input_path}")
     if options.output_path.exists() and not options.force:
@@ -63,18 +66,40 @@ def convert(options: ConversionOptions) -> ConversionResult:
     fragment = markdown_to_latex_fragment(
         preprocessed_path,
         lua_filter=lua_filter,
-        landscape_tables=options.landscape_tables,
-        table_font=options.table_font,
-        table_width=options.table_width,
+        landscape_tables=options.landscape_tables or str(options.user_config.tables["landscape"]),
+        table_font=options.table_font or str(options.user_config.tables["font"]),
+        table_width=options.table_width or str(options.user_config.tables["width"]),
+        table_borders=options.table_borders or str(options.user_config.tables["borders"]),
+        table_zebra=options.table_zebra if options.table_zebra is not None else bool(options.user_config.tables["zebra"]),
         source_dir=source_dir,
         verbose=options.verbose,
     )
+
+    required_packages = {
+        "calc": r"\real{" in fragment,
+        "array": r"\arraybackslash" in fragment,
+        "ragged2e": r"\RaggedRight" in fragment,
+        "ulem": r"\sout{" in fragment,
+    }
+    configured_packages = available_style_packages(
+        options.user_config.style_packages,
+        base_dir=options.config_path.parent if options.config_path else None,
+    )
+    missing_packages = sorted(
+        package for package, required in required_packages.items()
+        if required and package not in configured_packages
+    )
+    if missing_packages:
+        raise ConfigError(
+            "A conversão gerada requer o(s) pacote(s) LaTeX "
+            + ", ".join(missing_packages)
+            + ". Adicione-os a style_packages, a menos que um .sty local os carregue."
+        )
 
     tex = render_template(
         Path(template_path),
         metadata=metadata,
         body=fragment,
-        style_path=options.style_path,
         user_config=options.user_config,
         toc=options.toc,
         engine=options.engine,

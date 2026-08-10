@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "md2tex"
-version = "2.0.0"
+version = "2.3.0"
 description = "Conversor genérico de Markdown para LaTeX/PDF"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -32,7 +32,7 @@ md2tex = "md2tex.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-md2tex = ["templates/*.j2", "filters/*.lua"]
+md2tex = ["templates/*.j2", "templates/*.yaml", "filters/*.lua"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

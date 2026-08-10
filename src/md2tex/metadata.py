@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import datetime, timezone
 from typing import Any
 
 from .models import ConversionOptions, DocumentMetadata
@@ -21,7 +21,7 @@ def build_metadata(
         or options.input_path.stem.replace("-", " ").strip().title()
     )
     author = options.author or _as_text(raw.get("author")) or ""
-    document_date = options.date or _as_text(raw.get("date")) or date.today().isoformat()
+    document_date = options.date or _as_text(raw.get("date")) or datetime.now(timezone.utc).date().isoformat()
     version = (
         options.document_version
         or _as_text(raw.get("version"))
@@ -29,7 +29,11 @@ def build_metadata(
         or "1.0"
     )
     client = options.client or _as_text(raw.get("client")) or ""
-    subtitle = _as_text(raw.get("subtitle")) or ""
+    subtitle = (
+        options.subtitle.strip()
+        if options.subtitle is not None
+        else _as_text(raw.get("subtitle")).strip()
+    )
     status = _as_text(raw.get("status")) or ""
     document_type = _as_text(raw.get("document-type")) or profile["label"]
 

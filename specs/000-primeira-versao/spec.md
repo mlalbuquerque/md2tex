@@ -1,5 +1,8 @@
 # Feature Specification: 000-primeira-versao (Funcionalidades Atuais do netra-md2tex)
 
+> **Arquivo histórico**: este documento registra o baseline anterior à renomeação para `md2tex`; os nomes legados abaixo não descrevem a CLI atual.
+
+
 **Feature Directory**: `specs/000-primeira-versao`
 
 **Created**: 2026-08-02

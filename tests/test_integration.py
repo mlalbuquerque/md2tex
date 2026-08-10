@@ -1,11 +1,20 @@
-from pathlib import Path
 import shutil
 import time
+from importlib.resources import files
+from pathlib import Path
 
 import pytest
 
+from md2tex.config import load_config
 from md2tex.converter import convert
+from md2tex.errors import ConfigError
 from md2tex.models import ConversionOptions
+
+
+def config_for(tmp_path: Path):
+    path = tmp_path / "config.yaml"
+    path.write_text(files("md2tex").joinpath("templates", "config.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+    return load_config(path)
 
 
 @pytest.mark.skipif(shutil.which("pandoc") is None, reason="Pandoc não instalado")
@@ -21,6 +30,7 @@ def test_conversion_performance_under_one_second(tmp_path: Path):
         ConversionOptions(
             input_path=source,
             output_path=output,
+            user_config=config_for(tmp_path),
             force=True,
         )
     )
@@ -41,7 +51,7 @@ def test_generates_tex(tmp_path: Path):
         ConversionOptions(
             input_path=source,
             output_path=output,
-            style_path="netra-letterhead",
+            user_config=config_for(tmp_path),
             force=True,
         )
     )
@@ -78,7 +88,7 @@ Código curto: `status`.
         ConversionOptions(
             input_path=source,
             output_path=output,
-            style_path="netra-letterhead",
+            user_config=config_for(tmp_path),
             landscape_tables="never",
             table_font="scriptsize",
             table_width="equal",
@@ -94,6 +104,34 @@ Código curto: `status`.
     assert "\\scriptsize" in content
     assert "\\begin{landscape}" not in content
 
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="Pandoc não instalado")
+def test_textual_control_escape_is_not_emitted_as_latex_command(tmp_path: Path):
+    source = tmp_path / "doc.md"
+    source.write_text(
+        """---
+title: Escapes de controle
+---
+
+| Regra |
+|---|
+| Rejeitar nova linha (\\r\\n). |
+""",
+        encoding="utf-8",
+    )
+    output = tmp_path / "doc.tex"
+    convert(
+        ConversionOptions(
+            input_path=source,
+            output_path=output,
+            user_config=config_for(tmp_path),
+            force=True,
+        )
+    )
+    content = output.read_text(encoding="utf-8")
+    assert "\\textbackslash{}r\\textbackslash{}n" in content
+    assert "(\\r\\n)" not in content
+
 @pytest.mark.skipif(shutil.which("pandoc") is None, reason="Pandoc não instalado")
 def test_block_image_uses_max_dimensions_without_distortion(tmp_path: Path):
     source = tmp_path / "doc.md"
@@ -108,7 +146,7 @@ def test_block_image_uses_max_dimensions_without_distortion(tmp_path: Path):
         ConversionOptions(
             input_path=source,
             output_path=output,
-            style_path="netra-letterhead",
+            user_config=config_for(tmp_path),
             force=True,
         )
     )
@@ -118,3 +156,21 @@ def test_block_image_uses_max_dimensions_without_distortion(tmp_path: Path):
     assert "max height=0.7800\\textheight" in content
     assert "\\includegraphics{\\detokenize{diagram.png}}" in content
     assert "\\caption{Arquitetura}" in content
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="Pandoc não instalado")
+def test_table_fragment_requires_calc_from_configuration(tmp_path: Path):
+    source = tmp_path / "doc.md"
+    source.write_text("| A | B |\n|---|---|\n| Um | Dois |\n", encoding="utf-8")
+    config = config_for(tmp_path)
+    config.style_packages.remove("calc")
+    with pytest.raises(ConfigError, match="calc"):
+        convert(
+            ConversionOptions(
+                input_path=source,
+                output_path=tmp_path / "doc.tex",
+                user_config=config,
+                config_path=tmp_path / "config.yaml",
+                force=True,
+            )
+        )

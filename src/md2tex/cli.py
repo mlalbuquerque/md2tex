@@ -1,12 +1,18 @@
 from __future__ import annotations
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import click
 
 from . import __version__
-from .config import DEFAULT_CONFIG_PATH, load_config
+from .config import (
+    DEFAULT_CONFIG_PATH,
+    initialize_config,
+    load_config,
+    validate_style_configuration,
+    validate_style_paths,
+)
 from .converter import convert
 from .errors import ConfigError, Md2TexError
 from .models import ConversionOptions, UserConfig
@@ -14,10 +20,10 @@ from .setup import print_dependency_report, run_interactive_setup
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
-@click.argument("input_file", type=click.Path(path_type=Path, dir_okay=False, exists=True), required=False)
+@click.argument("input_file", type=str, required=False)
 @click.option("-o", "--output", type=click.Path(path_type=Path, dir_okay=False), help="Arquivo de saída (.tex ou .pdf).")
 @click.option("-c", "--config", "config_path", type=click.Path(path_type=Path, dir_okay=False), help="Caminho do arquivo de configuração YAML.")
-@click.option("-s", "--style", "style_packages", multiple=True, help="Pacote de estilo .sty adicional.")
+@click.option("-s", "--style", "style_packages", multiple=True, help="Substitui os pacotes de estilo definidos no YAML; pode repetir.")
 @click.option("--check-deps", is_flag=True, help="Verifica o relatório de dependências instaladas no sistema e sai.")
 @click.option("--setup", "run_setup", is_flag=True, help="Executa o assistente interativo de configuração de dependências.")
 @click.option(
@@ -29,6 +35,7 @@ from .setup import print_dependency_report, run_interactive_setup
     help="Perfil documental aplicado ao documento.",
 )
 @click.option("--title", help="Sobrescreve o título do documento.")
+@click.option("--subtitle", help="Sobrescreve o subtítulo do documento.")
 @click.option("--author", help="Sobrescreve o autor.")
 @click.option("--date", help="Sobrescreve a data do documento.")
 @click.option("--document-version", help="Sobrescreve a versão documental.")
@@ -69,24 +76,23 @@ from .setup import print_dependency_report, run_interactive_setup
 @click.option(
     "--landscape-tables",
     type=click.Choice(["auto", "always", "never"]),
-    default="auto",
-    show_default=True,
-    help="Coloca tabelas largas em páginas paisagem.",
+    default=None,
+    help="Sobrescreve tables.landscape da configuração.",
 )
 @click.option(
     "--table-font",
     type=click.Choice(["normalsize", "small", "footnotesize", "scriptsize"]),
-    default="small",
-    show_default=True,
-    help="Tamanho da fonte usado dentro das tabelas.",
+    default=None,
+    help="Sobrescreve tables.font da configuração.",
 )
 @click.option(
     "--table-width",
     type=click.Choice(["auto", "equal", "natural"]),
-    default="auto",
-    show_default=True,
-    help="Estratégia de largura das colunas.",
+    default=None,
+    help="Sobrescreve tables.width da configuração.",
 )
+@click.option("--table-borders", type=click.Choice(["none", "outer", "grid"]), default=None, help="Sobrescreve tables.borders da configuração.")
+@click.option("--table-zebra/--no-table-zebra", default=None, help="Sobrescreve tables.zebra da configuração.")
 @click.option("--shell-escape", is_flag=True, help="Habilita shell-escape na compilação LaTeX.")
 @click.option("--keep-build", is_flag=True, help="Mantém Markdown pré-processado e fragmento TEX.")
 @click.option("--clean", is_flag=True, help="Remove auxiliares LaTeX após execução, preservando .toc.")
@@ -103,6 +109,7 @@ def main(
     run_setup: bool,
     profile: str,
     title: str | None,
+    subtitle: str | None,
     author: str | None,
     date: str | None,
     document_version: str | None,
@@ -118,7 +125,9 @@ def main(
     mermaid_format: str,
     landscape_tables: str,
     table_font: str,
-    table_width: str,
+    table_width: str | None,
+    table_borders: str | None,
+    table_zebra: bool | None,
     shell_escape: bool,
     keep_build: bool,
     clean: bool,
@@ -126,7 +135,7 @@ def main(
     force: bool,
     verbose: bool,
 ) -> None:
-    """Converte INPUT_FILE Markdown para um documento LaTeX/PDF genérico."""
+    """Converte INPUT_FILE Markdown para LaTeX/PDF; use `md2tex init` para criar a configuração."""
     if check_deps:
         print_dependency_report()
         return
@@ -135,8 +144,19 @@ def main(
         run_interactive_setup()
         return
 
+    if input_file == "init":
+        try:
+            config_target = initialize_config(config_path, force=force)
+        except ConfigError as exc:
+            raise click.ClickException(str(exc)) from exc
+        click.echo(f"Configuração criada: {config_target}")
+        return
+
     if not input_file:
-        raise click.UsageError("É necessário fornecer um INPUT_FILE (ou usar --check-deps / --setup).")
+        raise click.UsageError("É necessário fornecer um INPUT_FILE (ou usar init / --check-deps / --setup).")
+    input_path = Path(input_file)
+    if not input_path.is_file():
+        raise click.UsageError(f"INPUT_FILE não encontrado ou não é um arquivo: {input_file}")
     if clean and clean_all:
         raise click.UsageError("Use apenas uma das opções: --clean ou --clean-all.")
 
@@ -149,19 +169,27 @@ def main(
         sys.exit(1)
 
     # Resolução de precedência (CLI sobre UserConfig)
-    effective_engine = engine or (user_config.compiler_options.get("engine") if user_config else "pdflatex")
-    merged_styles = list(user_config.style_packages) if user_config else []
-    if style_packages:
-        for s in style_packages:
-            if s not in merged_styles:
-                merged_styles.append(s)
+    effective_landscape = landscape_tables or user_config.tables["landscape"]
+    effective_table_font = table_font or user_config.tables["font"]
+    effective_table_width = table_width or user_config.tables["width"]
+    effective_table_borders = table_borders or user_config.tables["borders"]
+    effective_table_zebra = user_config.tables["zebra"] if table_zebra is None else table_zebra
+    effective_engine = engine or user_config.compiler_options["engine"]
+    effective_styles = list(style_packages) if style_packages else user_config.style_packages
 
-    if user_config:
-        user_config.style_packages = merged_styles
+    user_config.style_packages = effective_styles
+    try:
+        config_base_dir = (config_path or DEFAULT_CONFIG_PATH).expanduser().resolve().parent
+        validate_style_paths(user_config.style_packages, base_dir=config_base_dir)
+        validate_style_configuration(user_config, base_dir=config_base_dir)
+    except ConfigError as exc:
+        raise click.ClickException(str(exc)) from exc
 
-    output_path = output or input_file.with_suffix(".tex")
+    output_path = output or input_path.with_suffix(".tex")
+    if generate_pdf and output_path.suffix.lower() == ".pdf":
+        output_path = output_path.with_suffix(".tex")
     options = ConversionOptions(
-        input_path=input_file.resolve(),
+        input_path=input_path.resolve(),
         output_path=output_path.resolve(),
         config_path=config_path.resolve() if config_path else DEFAULT_CONFIG_PATH,
         user_config=user_config,
@@ -175,13 +203,16 @@ def main(
         engine=effective_engine,
         mermaid=mermaid,
         mermaid_format=mermaid_format,
-        landscape_tables=landscape_tables,
-        table_font=table_font,
-        table_width=table_width,
+        landscape_tables=effective_landscape,
+        table_font=effective_table_font,
+        table_width=effective_table_width,
+        table_borders=effective_table_borders,
+        table_zebra=effective_table_zebra,
         keep_build=keep_build,
         force=force,
         verbose=verbose,
         title=title,
+        subtitle=subtitle,
         author=author,
         date=date,
         document_version=document_version,

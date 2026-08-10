@@ -1,52 +1,52 @@
 # md2tex Roadmap & Future Releases
 
-Este documento descreve as sugestões de evolução e ideias para as próximas versões do **md2tex**, organizadas conforme o versionamento semântico ([Semantic Versioning - SemVer](https://semver.org/lang/pt-BR/)).
+Este documento registra lançamentos e planejamento segundo [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
 ## 🚀 Versões Futuras Planejadas
 
-### 📦 Versão v2.1.0 (Minor Release - Usabilidade & Bibliografia)
-> **Foco**: Melhorias na experiência inicial do desenvolvedor e suporte a referências acadêmicas.
+### 🎨 Versão v2.4.0 (Minor Release - Produtividade e Estilização Avançada)
 
-- [ ] **Comando `md2tex init`**:
-  - Comando interativo para criar o arquivo de configuração `~/.config/md2tex/config.yaml` pré-preenchido com comentários e exemplos explicativos.
-- [ ] **Suporte a Bibliografia e Citações (`.bib` / BibLaTeX)**:
-  - Reconhecimento automático de citações no formato Markdown `[@chave2026]` e injeção dos pacotes `biblatex`/`biber` no preâmbulo do LaTeX.
-- [ ] **Filtros Lua Customizados no `config.yaml`**:
-  - Permitir que os usuários adicionem caminhos de filtros Lua personalizados na chave `lua_filters` do `config.yaml`.
+- [ ] **Modo Watch (`md2tex watch document.md`)**.
+- [ ] **Temas de Destaque de Sintaxe (`minted` / `listings`)**.
+- [ ] **Layouts de Capa Selecionáveis**.
 
-#### 💡 Detalhamento dos Conceitos da v2.1.0:
-- **Arquivo `.bib` (BibTeX/BibLaTeX)**: Banco de dados padronizado de referências bibliográficas. O autor cita no Markdown via `[@chave]` e o `md2tex` gera a lista de referências no final do documento LaTeX/PDF automaticamente.
-- **Filtros Lua (*Lua Filters*)**: Scripts em Lua que modificam a árvore semântica (AST) do documento Pandoc na memória antes da geração do LaTeX (ex: caixas de aviso, formatação de tabelas e URLs protegidas).
+### 🌐 Versão v3.0.0 (Major Release - Multi-Formato e Interface Web)
 
----
-
-### 🎨 Versão v2.2.0 (Minor Release - Produtividade & Estilização Avançada)
-> **Foco**: Recompilação em tempo real e opções visuais avançadas.
-
-- [ ] **Modo Watch (`md2tex watch document.md`)**:
-  - Monitoramento contínuo do arquivo Markdown com recompilação automática do PDF a cada alteração salva (*live reload*).
-- [ ] **Temas de Destaque de Sintaxe (`minted` / `listings`)**:
-  - Configuração de temas de cores para blocos de código no `config.yaml` (`theme: nord`, `theme: dracula`, `theme: github`).
-- [ ] **Layouts de Capa Selecionáveis**:
-  - Opção no `config.yaml` ou CLI (`--cover-style`) para alternar entre capas *modern*, *classic*, *minimalist* ou *academic*.
-
----
-
-### 🌐 Versão v3.0.0 (Major Release - Multi-Formato & Interface Web)
-> **Foco**: Expansão para múltiplos formatos de saída e servidor web local.
-
-- [ ] **Múltiplos Formatos de Saída (`--to docx | html | epub`)**:
-  - Capacidade de exportar o documento para Word (`.docx`), HTML responsivo ou e-Books (`.epub`) além de LaTeX/PDF.
-- [ ] **Servidor Web & API Local (`md2tex serve`)**:
-  - Interface gráfica web executada localmente no navegador com pré-visualização lado a lado do PDF.
-- [ ] **Cache Inteligente de Diagramas Mermaid**:
-  - Armazenamento em cache de imagens geradas pelo `mmdc` para evitar renderização duplicada em documentos grandes, acelerando as compilações subsequentes.
+- [ ] **Múltiplos Formatos de Saída (`--to docx | html | epub`)**.
+- [ ] **Servidor Web & API Local (`md2tex serve`)**.
+- [ ] **Cache Inteligente de Diagramas Mermaid**.
 
 ---
 
 ## 📌 Histórico de Versões Principais
+
+- **v2.3.0** *(Minor Release)*:
+  - Adiciona a opção `--subtitle` para sobrescrever o subtítulo do documento.
+  - Agrupa o tipo de documento com autoria, versão e data nas capas.
+  - Mantém o front matter quando a opção é omitida e permite limpar o subtítulo com valor vazio.
+
+
+- **v2.2.0** *(Minor Release)*:
+  - Adiciona a seção `tables` no YAML e sobrescritas de CLI para zebrado, bordas, largura, fonte e paisagem.
+  - Suporta contornos `none`, `outer` e `grid`, além de adaptadores de tabelas no `netra-letterhead.sty`.
+
+- **v2.1.2** *(Patch Release)*:
+  - Valida pacotes LaTeX requeridos pelo fragmento Pandoc e orienta a inclusão em `style_packages` antes da compilação.
+
+- **v2.1.1** *(Patch Release)*:
+  - Detecta antecipadamente conflitos entre `page_geometry`/`style_packages` e pacotes carregados por arquivos `.sty`.
+  - Acrescenta orientação de configuração para erros LaTeX de conflito de opções.
+
+- **v2.1.0** *(Minor Release)*:
+  - Adiciona `md2tex init` para criar uma configuração completa inicial.
+  - Remove defaults de estilo e compilação do código; o YAML passa a ser obrigatório e validado estritamente.
+  - Alinha documentação, contratos e referências legadas ao nome md2tex.
+
+
+- **v2.0.2** *(Patch Release)*:
+  - Corrige a conversão de sequências textuais de controle, como `\r\n`, que o Pandoc encaminhava como comandos LaTeX inválidos.
 
 - **v2.0.0**: 
   - Renomeação completa do projeto para `md2tex`.

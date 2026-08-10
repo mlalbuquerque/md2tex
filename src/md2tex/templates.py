@@ -29,11 +29,10 @@ def render_template(
     *,
     metadata: DocumentMetadata,
     body: str,
-    style_path: str | None = None,
-    user_config: UserConfig | None = None,
+    user_config: UserConfig,
     toc: bool = True,
-    engine: str = "pdflatex",
-    used_svg: bool = False,
+    engine: str,
+    used_svg: bool,
     source_dir: Path,
 ) -> str:
     environment = Environment(
@@ -55,7 +54,6 @@ def render_template(
     return template.render(
         metadata=metadata,
         body=body,
-        style_path=style_path,
         user_config=user_config,
         toc=toc,
         engine=engine,

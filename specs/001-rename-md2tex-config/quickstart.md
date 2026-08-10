@@ -1,67 +1,24 @@
-# Quickstart Validation Guide: md2tex
+# Quickstart: md2tex 2.2.0
 
-**Feature**: `001-rename-md2tex-config`  
-**Date**: 2026-08-03  
-**Spec**: [spec.md](file:///home/mlalbuquerque/Dropbox/Netra/projetos/md2tex/app/specs/001-rename-md2tex-config/spec.md)
+```bash
+md2tex init
+md2tex documento.md --pdf
+```
 
-## Validation Scenarios
+Para projeto específico:
 
-### Scenario 1: Verify System Renaming and Package Execution
+```bash
+md2tex init --config ./md2tex.yaml
+md2tex documento.md --config ./md2tex.yaml --style ./estilos/empresa.sty
+```
 
-1. Check installed CLI entrypoint:
-   ```bash
-   md2tex --help
-   ```
-2. **Expected Result**: CLI help identifies application as `md2tex`, displaying options for input, output, configuration, and style packages.
+Resultados esperados:
 
----
+1. `init` cria um YAML válido e informa o caminho.
+2. Executar `init` novamente falha sem `--force`.
+3. Uma conversão sem YAML falha e recomenda `md2tex init`.
+4. Alterações de `typography`, `style_packages` e `preamble_includes` aparecem no TEX gerado.
 
-### Scenario 2: Create User Configuration and Convert Markdown to LaTeX
+## Tabelas
 
-1. Ensure the user configuration directory exists:
-   ```bash
-   mkdir -p ~/.config/md2tex
-   ```
-2. Create `~/.config/md2tex/config.yaml` with custom style settings:
-   ```yaml
-   document_class: article
-   class_options:
-     - 12pt
-     - a4paper
-   style_packages:
-     - hyperref
-     - graphicx
-   preamble_includes:
-     - '\setlength{\parindent}{0pt}'
-   ```
-3. Create a test Markdown file `sample.md`:
-   ```markdown
-   # Hello md2tex
-
-   This is a generic document converted using **md2tex**.
-   ```
-4. Execute conversion:
-   ```bash
-   md2tex sample.md -o sample.tex
-   ```
-5. **Expected Result**: `sample.tex` is generated containing `\documentclass[12pt,a4paper]{article}`, `\usepackage{hyperref}`, `\usepackage{graphicx}`, and `\setlength{\parindent}{0pt}` without any Netra-specific macros or headers.
-
----
-
-### Scenario 3: Verify Missing Configuration File Warning
-
-1. Temporarily move or point to a non-existent configuration path:
-   ```bash
-   md2tex sample.md -c /tmp/nonexistent.yaml
-   ```
-2. **Expected Result**: Execution halts with exit code 1 and outputs a descriptive message: `Error: Configuration file not found at /tmp/nonexistent.yaml. Please create a valid md2tex configuration file.`
-
----
-
-### Scenario 4: CLI Flag Override
-
-1. Execute conversion with explicit CLI engine/style flags:
-   ```bash
-   md2tex sample.md -s extra_custom.sty -o sample_override.tex
-   ```
-2. **Expected Result**: `sample_override.tex` contains `\usepackage{extra_custom}` added to the preamble alongside packages from `config.yaml`.
+Defina `tables.borders: grid` e `tables.zebra: true` para grade completa e zebrado. Para um estilo que fornece as macros `mdtexStartTable`/`mdtexEndTable`, o zebrado é aplicado automaticamente. Use `--table-borders grid --table-zebra` para sobrescrever uma execução.
