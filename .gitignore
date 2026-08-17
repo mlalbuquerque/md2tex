@@ -84,3 +84,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Agentes & IA
+.agents

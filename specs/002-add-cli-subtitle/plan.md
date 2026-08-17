@@ -42,7 +42,7 @@ Adicionar `--subtitle` com precedência explícita sobre o front matter; subtít
 ```text
 src/md2tex/{__init__.py,cli.py,models.py,metadata.py}
 src/md2tex/templates/{base,report,meeting-minutes,adr,technical-plan}.tex.j2
-tests/{test_cli.py,test_integration.py}
+tests/{test_cli.py,test_cli_subtitle.py,test_metadata.py}
 README.md
 pyproject.toml
 specs/002-add-cli-subtitle/{research.md,data-model.md,contracts/cli-subtitle.md,quickstart.md}

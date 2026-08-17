@@ -57,6 +57,7 @@ Como leitora ou leitor do documento, quero encontrar o tipo de documento junto d
 
 - Um valor de subtítulo contendo acentos, aspas ou caracteres de marcação não deve alterar os demais dados exibidos na capa.
 - Um subtítulo composto apenas por espaços é tratado como ausência de subtítulo.
+- Espaços no início ou no fim de um subtítulo não vazio são preservados; somente um valor composto inteiramente por espaços é tratado como ausência de subtítulo.
 - Quando não houver subtítulo em nenhuma fonte, o tipo de documento continua disponível entre os metadados de identificação da capa.
 
 ## Requirements *(mandatory)*

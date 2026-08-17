@@ -38,7 +38,7 @@
 ### Implementation for User Story 1
 
 - [X] T005 [US1] Define --subtitle, capture whether it was supplied, and pass it into ConversionOptions in src/md2tex/cli.py.
-- [X] T006 [US1] Resolve the explicit CLI subtitle before front matter and normalize non-empty text in src/md2tex/metadata.py.
+- [X] T006 [US1] Resolve the explicit CLI subtitle before front matter; treat whitespace-only values as absent while preserving non-empty subtitle text exactly as supplied in src/md2tex/metadata.py.
 
 **Checkpoint**: A CLI-provided subtitle is independently functional and wins over front matter.
 
