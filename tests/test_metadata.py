@@ -30,6 +30,29 @@ def test_subtitle_cli_precedence_and_empty_values(cli_subtitle: str | None, expe
 
 
 @pytest.mark.parametrize(
+    ("front_matter_subtitle", "cli_subtitle", "expected"),
+    [
+        ("Subtítulo do front matter", "  Subtítulo da CLI  ", "  Subtítulo da CLI  "),
+        ("  Subtítulo do front matter  ", None, "  Subtítulo do front matter  "),
+    ],
+)
+def test_subtitle_preserves_surrounding_whitespace(
+    front_matter_subtitle: str, cli_subtitle: str | None, expected: str
+):
+    metadata, _ = build_metadata(
+        {"subtitle": front_matter_subtitle},
+        "# Documento\n",
+        ConversionOptions(
+            input_path=Path("documento.md"),
+            output_path=Path("documento.tex"),
+            subtitle=cli_subtitle,
+        ),
+    )
+
+    assert metadata.subtitle == expected
+
+
+@pytest.mark.parametrize(
     "template_name",
     [
         "base.tex.j2",

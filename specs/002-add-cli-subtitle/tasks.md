@@ -110,3 +110,9 @@
 2. Add the empty-value behavior with T007–T009 and retest the subtitle contract.
 3. Apply the cover-layout change with T010–T011.
 4. Finish version, documentation, and full quickstart validation with T012–T014.
+
+---
+
+## Phase 7: Convergence
+
+- [X] T015 Preserve leading and trailing whitespace in non-empty CLI and front-matter subtitles while treating whitespace-only values as absent; add regression coverage in src/md2tex/metadata.py and tests/test_metadata.py per SC-001 and Edge Cases (contradicts)

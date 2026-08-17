@@ -29,11 +29,10 @@ def build_metadata(
         or "1.0"
     )
     client = options.client or _as_text(raw.get("client")) or ""
-    subtitle = (
-        options.subtitle.strip()
-        if options.subtitle is not None
-        else _as_text(raw.get("subtitle")).strip()
+    subtitle_source = (
+        options.subtitle if options.subtitle is not None else _as_text(raw.get("subtitle"))
     )
+    subtitle = subtitle_source if subtitle_source.strip() else ""
     status = _as_text(raw.get("status")) or ""
     document_type = _as_text(raw.get("document-type")) or profile["label"]
 
