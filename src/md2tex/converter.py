@@ -13,9 +13,16 @@ from .metadata import build_metadata
 from .models import ConversionOptions, ConversionResult, ValidationMessage
 from .pandoc import markdown_to_latex_fragment
 from .profiles import get_profile
+from .rules import load_rules
 from .templates import render_template
 from .utils import ensure_parent, normalize_heading_levels, strip_manual_heading_numbering
-from .validator import has_errors, validate_markdown, validate_metadata, validate_tex
+from .validator import (
+    has_errors,
+    missing_required_topics,
+    validate_markdown,
+    validate_metadata,
+    validate_tex,
+)
 
 
 def convert(options: ConversionOptions) -> ConversionResult:
@@ -31,14 +38,31 @@ def convert(options: ConversionOptions) -> ConversionResult:
     source_dir = options.input_path.parent.resolve()
     original = options.input_path.read_text(encoding="utf-8")
     raw_metadata, markdown = parse_frontmatter(original)
+    headings_markdown = normalize_heading_levels(strip_manual_heading_numbering(markdown))
     metadata, markdown = build_metadata(raw_metadata, markdown, options)
     markdown = strip_manual_heading_numbering(markdown)
     markdown = normalize_heading_levels(markdown)
 
     messages: list[ValidationMessage] = []
+    try:
+        rules = load_rules(options.rules_path)
+    except ConfigError as exc:
+        if options.rules_path is not None:
+            raise
+        rules = {}
+        messages.append(ValidationMessage("warning", str(exc), "rules"))
+
     if options.validate:
         messages.extend(validate_metadata(metadata, options.profile))
         messages.extend(validate_markdown(markdown, source_dir))
+        for topic in missing_required_topics(headings_markdown, rules.get(options.profile, [])):
+            messages.append(
+                ValidationMessage(
+                    "warning",
+                    f"Tópico obrigatório ausente para o tipo '{options.profile}': '{topic}'.",
+                    "topics",
+                )
+            )
 
     figures_dir = options.figures_dir
     mermaid_result = render_mermaid_blocks(

@@ -39,12 +39,12 @@
 
 **Independent Test**: Um Markdown com regras para o perfil selecionado gera avisos nominais para cada tópico ausente; títulos com caixa ou espaços distintos satisfazem a regra; sem regras, a conversão não muda.
 
-- [ ] T010 [P] [US1] Add converter integration tests for satisfied, missing, duplicated, and profile-isolated topics in tests/test_integration.py
-- [ ] T011 [P] [US1] Add CLI tests for `--rules`, default-rule absence, and explicit missing or invalid rules files in tests/test_cli.py
-- [ ] T012 [US1] Add the `--rules PATH` conversion option and forward its explicitness into ConversionOptions in src/md2tex/cli.py
-- [ ] T013 [US1] Load rules and append `topics` warnings after Markdown heading normalization but before Mermaid/Pandoc work in src/md2tex/converter.py
-- [ ] T014 [US1] Emit one actionable warning per original configured topic and preserve normal TEX generation in src/md2tex/converter.py
-- [ ] T015 [US1] Run the User Story 1 scenarios from tests/test_rules.py tests/test_validator.py tests/test_cli.py tests/test_integration.py
+- [X] T010 [P] [US1] Add converter integration tests for satisfied, missing, duplicated, and profile-isolated topics in tests/test_integration.py
+- [X] T011 [P] [US1] Add CLI tests for `--rules`, default-rule absence, and explicit missing or invalid rules files in tests/test_cli.py
+- [X] T012 [US1] Add the `--rules PATH` conversion option and forward its explicitness into ConversionOptions in src/md2tex/cli.py
+- [X] T013 [US1] Load rules and append `topics` warnings after Markdown heading normalization but before Mermaid/Pandoc work in src/md2tex/converter.py
+- [X] T014 [US1] Emit one actionable warning per original configured topic and preserve normal TEX generation in src/md2tex/converter.py
+- [X] T015 [US1] Run the User Story 1 scenarios from tests/test_rules.py tests/test_validator.py tests/test_cli.py tests/test_integration.py
 
 **Checkpoint**: US1 is independently usable as an opt-in warning-only validator.
 

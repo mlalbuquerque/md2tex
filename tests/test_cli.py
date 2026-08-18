@@ -113,3 +113,71 @@ def test_cli_pdf_output_uses_a_tex_intermediate_path(tmp_path: Path, monkeypatch
 
     assert result.exit_code == 0
     assert captured["output_path"] == tmp_path / "output.tex"
+
+
+def test_cli_forwards_explicit_rules_path(tmp_path: Path, monkeypatch):
+    doc = tmp_path / "input.md"
+    doc.write_text("# Documento\n", encoding="utf-8")
+    config_file = write_valid_config(tmp_path / "config.yaml")
+    rules_file = tmp_path / "rules.yaml"
+    rules_file.write_text("rules: {}\n", encoding="utf-8")
+    captured = {}
+
+    def fake_convert(options):
+        captured["rules_path"] = options.rules_path
+        return ConversionResult(tex_path=options.output_path, pdf_path=None, messages=[])
+
+    monkeypatch.setattr("md2tex.cli.convert", fake_convert)
+    result = CliRunner().invoke(
+        main, [str(doc), "-c", str(config_file), "--rules", str(rules_file)]
+    )
+
+    assert result.exit_code == 0
+    assert captured["rules_path"] == rules_file.resolve()
+
+
+def test_cli_converts_when_default_rules_file_is_absent(tmp_path: Path, monkeypatch):
+    doc = tmp_path / "input.md"
+    doc.write_text("# Documento\n", encoding="utf-8")
+    config_file = write_valid_config(tmp_path / "config.yaml")
+    monkeypatch.setattr("md2tex.rules.DEFAULT_RULES_PATH", tmp_path / "missing-rules.yaml")
+    monkeypatch.setattr(
+        "md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: "Texto"
+    )
+
+    result = CliRunner().invoke(main, [str(doc), "-c", str(config_file)])
+
+    assert result.exit_code == 0
+    assert (tmp_path / "input.tex").exists()
+    assert "[rules]" not in result.output
+
+
+def test_cli_explicit_missing_or_invalid_rules_fail_before_conversion(tmp_path: Path, monkeypatch):
+    doc = tmp_path / "input.md"
+    doc.write_text("# Documento\n", encoding="utf-8")
+    config_file = write_valid_config(tmp_path / "config.yaml")
+    called = False
+
+    def fake_convert(options):
+        nonlocal called
+        called = True
+        from md2tex.rules import load_rules
+
+        load_rules(options.rules_path)
+        return ConversionResult(tex_path=options.output_path, pdf_path=None, messages=[])
+
+    monkeypatch.setattr("md2tex.cli.convert", fake_convert)
+    missing = CliRunner().invoke(
+        main, [str(doc), "-c", str(config_file), "--rules", str(tmp_path / "missing.yaml")]
+    )
+    invalid_path = tmp_path / "invalid.yaml"
+    invalid_path.write_text("not-rules: {}\n", encoding="utf-8")
+    invalid = CliRunner().invoke(
+        main, [str(doc), "-c", str(config_file), "--rules", str(invalid_path)]
+    )
+
+    assert missing.exit_code == 1
+    assert invalid.exit_code == 1
+    assert "Arquivo de regras não encontrado" in missing.output
+    assert "Regras inválidas" in invalid.output
+    assert called

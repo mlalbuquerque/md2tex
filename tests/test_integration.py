@@ -174,3 +174,61 @@ def test_table_fragment_requires_calc_from_configuration(tmp_path: Path):
                 force=True,
             )
         )
+
+
+def _convert_with_topics(tmp_path: Path, monkeypatch, rules: str, profile: str, markdown: str):
+    source = tmp_path / "doc.md"
+    source.write_text(f"---\ntitle: Documento\n---\n\n{markdown}", encoding="utf-8")
+    rules_path = tmp_path / "rules.yaml"
+    rules_path.write_text(rules, encoding="utf-8")
+    monkeypatch.setattr("md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: "Texto")
+    output = tmp_path / "doc.tex"
+    result = convert(
+        ConversionOptions(
+            input_path=source,
+            output_path=output,
+            user_config=config_for(tmp_path),
+            rules_path=rules_path,
+            profile=profile,
+            mermaid=False,
+            force=True,
+        )
+    )
+    assert output.exists()
+    return result
+
+
+def test_topic_rules_accept_satisfied_and_duplicate_headings(tmp_path: Path, monkeypatch):
+    result = _convert_with_topics(
+        tmp_path,
+        monkeypatch,
+        "rules:\n  adr:\n    - Decisão\n",
+        "adr",
+        "# decisão\n\n## DECISÃO\n",
+    )
+    assert not [message for message in result.messages if message.source == "topics"]
+
+
+def test_topic_rules_warn_for_each_missing_original_topic(tmp_path: Path, monkeypatch):
+    result = _convert_with_topics(
+        tmp_path,
+        monkeypatch,
+        "rules:\n  adr:\n    - Contexto\n    - Decisão\n",
+        "adr",
+        "# Contexto\n",
+    )
+    warnings = [message for message in result.messages if message.source == "topics"]
+    assert [message.message for message in warnings] == [
+        "Tópico obrigatório ausente para o tipo 'adr': 'Decisão'."
+    ]
+
+
+def test_topic_rules_only_apply_to_selected_profile(tmp_path: Path, monkeypatch):
+    result = _convert_with_topics(
+        tmp_path,
+        monkeypatch,
+        "rules:\n  adr:\n    - Decisão\n  report:\n    - Conclusão\n",
+        "report",
+        "# Conclusão\n",
+    )
+    assert not [message for message in result.messages if message.source == "topics"]

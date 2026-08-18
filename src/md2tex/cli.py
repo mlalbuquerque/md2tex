@@ -23,6 +23,7 @@ from .setup import print_dependency_report, run_interactive_setup
 @click.argument("input_file", type=str, required=False)
 @click.option("-o", "--output", type=click.Path(path_type=Path, dir_okay=False), help="Arquivo de saída (.tex ou .pdf).")
 @click.option("-c", "--config", "config_path", type=click.Path(path_type=Path, dir_okay=False), help="Caminho do arquivo de configuração YAML.")
+@click.option("--rules", "rules_path", type=click.Path(path_type=Path, dir_okay=False), help="Caminho do arquivo YAML de regras de tópicos.")
 @click.option("-s", "--style", "style_packages", multiple=True, help="Substitui os pacotes de estilo definidos no YAML; pode repetir.")
 @click.option("--check-deps", is_flag=True, help="Verifica o relatório de dependências instaladas no sistema e sai.")
 @click.option("--setup", "run_setup", is_flag=True, help="Executa o assistente interativo de configuração de dependências.")
@@ -104,6 +105,7 @@ def main(
     input_file: Path | None,
     output: Path | None,
     config_path: Path | None,
+    rules_path: Path | None,
     style_packages: tuple[str, ...],
     check_deps: bool,
     run_setup: bool,
@@ -192,6 +194,7 @@ def main(
         input_path=input_path.resolve(),
         output_path=output_path.resolve(),
         config_path=config_path.resolve() if config_path else DEFAULT_CONFIG_PATH,
+        rules_path=rules_path.expanduser().resolve() if rules_path else None,
         user_config=user_config,
         profile=profile,
         figures_dir=figures_dir,
