@@ -37,6 +37,7 @@ class ConversionOptions:
     input_path: Path
     output_path: Path
     config_path: Path | None = None
+    rules_path: Path | None = None
     user_config: UserConfig | None = None
     profile: str = "default"
     figures_dir: Path = Path("figures")

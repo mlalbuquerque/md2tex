@@ -1,0 +1,21 @@
+# Regras de tópicos obrigatórios por perfil documental.
+#
+# Remova os comentários e adapte os exemplos dos perfis que quiser validar.
+# O arquivo pode conter uma lista vazia para indicar que um perfil não exige tópicos.
+rules: {}
+
+# rules:
+#   default:
+#     - Objetivo
+#   report:
+#     - Objetivo
+#     - Conclusão
+#   meeting-minutes:
+#     - Participantes
+#     - Encaminhamentos
+#   adr:
+#     - Contexto
+#     - Decisão
+#   technical-plan:
+#     - Objetivo
+#     - Plano de implementação

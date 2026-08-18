@@ -1,4 +1,20 @@
-from md2tex.validator import has_errors, validate_log, validate_tex
+from md2tex.validator import (
+    extract_headings,
+    has_errors,
+    missing_required_topics,
+    validate_log,
+    validate_tex,
+)
+
+
+def test_extract_headings_handles_atx_setext_and_fenced_code():
+    markdown = "# Objetivo #\n\nConclusão\n---------\n\n```md\n# Ignorado\n```\n"
+    assert extract_headings(markdown) == {"objetivo", "conclusão"}
+
+
+def test_missing_required_topics_normalizes_spaces_and_case():
+    missing = missing_required_topics("##  DECISÃO  \n", ["Decisão", "Contexto"])
+    assert missing == ["Contexto"]
 
 
 def test_detects_unresolved_placeholder():

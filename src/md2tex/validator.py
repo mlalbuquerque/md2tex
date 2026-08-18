@@ -8,6 +8,45 @@ from .models import DocumentMetadata, ValidationMessage
 PLACEHOLDER_RE = re.compile(r"@@PH\d+@@")
 IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 HEADING_RE = re.compile(r"^(#{1,6})\s+", re.MULTILINE)
+ATX_HEADING_RE = re.compile(r"^ {0,3}#{1,6}[ \t]+(.+?)[ \t]*#*[ \t]*$")
+SETEXT_UNDERLINE_RE = re.compile(r"^ {0,3}(=+|-+)[ \t]*$")
+FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+
+
+def extract_headings(markdown: str) -> set[str]:
+    """Retorna títulos ATX/Setext normalizados, ignorando blocos fenced."""
+    headings: set[str] = set()
+    in_fence: str | None = None
+    previous_line: str | None = None
+    for line in markdown.splitlines():
+        fence = FENCE_RE.match(line)
+        if fence:
+            marker = fence.group(1)
+            if in_fence is None:
+                in_fence = marker[0]
+            elif marker[0] == in_fence:
+                in_fence = None
+            previous_line = None
+            continue
+        if in_fence is not None:
+            continue
+        atx = ATX_HEADING_RE.match(line)
+        if atx:
+            headings.add(atx.group(1).strip().casefold())
+            previous_line = None
+            continue
+        if SETEXT_UNDERLINE_RE.match(line) and previous_line and previous_line.strip():
+            headings.add(previous_line.strip().casefold())
+            previous_line = None
+            continue
+        previous_line = line
+    return headings
+
+
+def missing_required_topics(markdown: str, required_topics: list[str]) -> list[str]:
+    """Preserva o texto configurado para cada tópico obrigatório ausente."""
+    headings = extract_headings(markdown)
+    return [topic for topic in required_topics if topic.strip().casefold() not in headings]
 
 
 def validate_markdown(markdown: str, source_dir: Path) -> list[ValidationMessage]:
