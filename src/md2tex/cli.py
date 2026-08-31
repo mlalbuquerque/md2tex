@@ -16,10 +16,13 @@ from .config import (
 from .converter import convert
 from .errors import ConfigError, Md2TexError
 from .models import ConversionOptions, UserConfig
+from .rules import initialize_rules
 from .setup import print_dependency_report, run_interactive_setup
 
 
-@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.command(
+    context_settings={"help_option_names": ["-h", "--help"], "allow_extra_args": True}
+)
 @click.argument("input_file", type=str, required=False)
 @click.option("-o", "--output", type=click.Path(path_type=Path, dir_okay=False), help="Arquivo de saída (.tex ou .pdf).")
 @click.option("-c", "--config", "config_path", type=click.Path(path_type=Path, dir_okay=False), help="Caminho do arquivo de configuração YAML.")
@@ -101,7 +104,9 @@ from .setup import print_dependency_report, run_interactive_setup
 @click.option("--force", is_flag=True, help="Sobrescreve o arquivo de saída existente.")
 @click.option("-v", "--verbose", is_flag=True, help="Mostra os comandos externos executados.")
 @click.version_option(__version__, "--version", prog_name="md2tex")
+@click.pass_context
 def main(
+    ctx: click.Context,
     input_file: Path | None,
     output: Path | None,
     config_path: Path | None,
@@ -152,6 +157,16 @@ def main(
         except ConfigError as exc:
             raise click.ClickException(str(exc)) from exc
         click.echo(f"Configuração criada: {config_target}")
+        return
+
+    if input_file == "rules":
+        if ctx.args != ["init"]:
+            raise click.UsageError("Use 'md2tex rules init [--rules PATH] [--force]'.")
+        try:
+            rules_target = initialize_rules(rules_path, force=force)
+        except ConfigError as exc:
+            raise click.ClickException(str(exc)) from exc
+        click.echo(f"Regras criadas: {rules_target}")
         return
 
     if not input_file:

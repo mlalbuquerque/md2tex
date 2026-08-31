@@ -7,7 +7,7 @@ import pytest
 
 from md2tex.config import load_config
 from md2tex.converter import convert
-from md2tex.errors import ConfigError
+from md2tex.errors import ConfigError, ValidationError
 from md2tex.models import ConversionOptions
 
 
@@ -232,3 +232,38 @@ def test_topic_rules_only_apply_to_selected_profile(tmp_path: Path, monkeypatch)
         "# Conclusão\n",
     )
     assert not [message for message in result.messages if message.source == "topics"]
+
+
+def _strict_topic_options(tmp_path: Path, output: Path) -> ConversionOptions:
+    source = tmp_path / "doc.md"
+    source.write_text("---\ntitle: Documento\n---\n\n# Contexto\n", encoding="utf-8")
+    rules_path = tmp_path / "rules.yaml"
+    rules_path.write_text("rules:\n  adr:\n    - Decisão\n", encoding="utf-8")
+    return ConversionOptions(
+        input_path=source,
+        output_path=output,
+        user_config=config_for(tmp_path),
+        rules_path=rules_path,
+        profile="adr",
+        strict=True,
+        force=True,
+    )
+
+
+def test_strict_topics_does_not_create_output_or_run_mermaid(tmp_path: Path, monkeypatch):
+    output = tmp_path / "doc.tex"
+    monkeypatch.setattr(
+        "md2tex.converter.render_mermaid_blocks",
+        lambda *args, **kwargs: pytest.fail("Mermaid não deve executar no gate estrito"),
+    )
+    with pytest.raises(ValidationError, match="Decisão"):
+        convert(_strict_topic_options(tmp_path, output))
+    assert not output.exists()
+
+
+def test_strict_topics_preserves_existing_output(tmp_path: Path):
+    output = tmp_path / "doc.tex"
+    output.write_bytes(b"conteudo existente")
+    with pytest.raises(ValidationError, match="Validação interrompeu"):
+        convert(_strict_topic_options(tmp_path, output))
+    assert output.read_bytes() == b"conteudo existente"

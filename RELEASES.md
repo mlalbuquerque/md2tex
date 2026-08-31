@@ -6,12 +6,6 @@ Este documento registra lançamentos e planejamento segundo [Semantic Versioning
 
 ## 🚀 Versões Futuras Planejadas
 
-### 🎨 Versão v2.4.0 (Minor Release - Produtividade e Estilização Avançada)
-
-- [ ] **Modo Watch (`md2tex watch document.md`)**.
-- [ ] **Temas de Destaque de Sintaxe (`minted` / `listings`)**.
-- [ ] **Layouts de Capa Selecionáveis**.
-
 ### 🌐 Versão v3.0.0 (Major Release - Multi-Formato e Interface Web)
 
 - [ ] **Múltiplos Formatos de Saída (`--to docx | html | epub`)**.
@@ -21,6 +15,12 @@ Este documento registra lançamentos e planejamento segundo [Semantic Versioning
 ---
 
 ## 📌 Histórico de Versões Principais
+
+- **v2.4.0** *(Minor Release)*:
+  - Adiciona regras YAML independentes de estilo para tópicos obrigatórios por perfil documental.
+  - Inclui `md2tex rules init` para criar um modelo comentado e personalizável.
+  - Adiciona `--rules PATH`, avisos de tópicos pendentes e o bloqueio antecipado com `--strict`.
+  - Preserva a conversão quando não há regras configuradas e mantém `--no-validate` como opt-out das validações de tópicos.
 
 - **v2.3.0** *(Minor Release)*:
   - Adiciona a opção `--subtitle` para sobrescrever o subtítulo do documento.

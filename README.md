@@ -29,6 +29,7 @@ A ferramenta usa o Pandoc para interpretar o Markdown como uma estrutura semânt
 - **Checklists**: Suporte a listas de tarefas (`- [x]` / `- [ ]`).
 - **Validação Robustecida**: Verificação de imagens ausentes, hierarquia de títulos, placeholders `@@PHn@@` e inspeção de logs de compilação.
 - **Modo Estrito (CI/CD)**: Interrupção imediata do pipeline em caso de erros ou inconsistências.
+- **Regras de Tópicos**: Validação opcional de seções obrigatórias por perfil, separada da configuração de estilo.
 - **Limpeza de Auxiliares**: Opções `--clean` e `--clean-all` para manutenção de diretórios de build.
 - **Templates Jinja2**: Totalmente customizáveis com delimitadores ajustados para LaTeX.
 
@@ -364,6 +365,37 @@ A ferramenta possui 4 perfis pré-configurados que utilizam templates específic
    md2tex plano.md --type technical-plan
    ```
 
+### Regras de tópicos obrigatórios
+
+As regras de conteúdo ficam em `~/.config/md2tex/rules.yaml`, separadas de `config.yaml` e de qualquer definição de estilo. Crie o modelo comentado:
+
+```bash
+md2tex rules init
+
+# ou use um arquivo compartilhado pelo projeto
+md2tex rules init --rules ./md2tex-rules.yaml
+```
+
+O modelo traz exemplos inativos para `default`, `report`, `meeting-minutes`, `adr` e `technical-plan`. Descomente e adapte os perfis necessários:
+
+```yaml
+rules:
+  adr:
+    - Contexto
+    - Decisão
+  report:
+    - Objetivo
+    - Conclusão
+```
+
+Use `--rules PATH` para selecionar regras de projeto. Cada tópico ausente produz um aviso e o TEX continua sendo criado:
+
+```bash
+md2tex decisao.md --type adr --rules ./md2tex-rules.yaml --config ./config.yaml
+```
+
+Com `--strict`, tópicos pendentes interrompem a geração antes de Mermaid, Pandoc e qualquer escrita de saída. Use `--no-validate` para desabilitar as verificações de tópicos; ele não suprime erros em um arquivo escolhido explicitamente com `--rules`.
+
 ---
 
 ## 8. Metadados YAML e Precedência
@@ -562,6 +594,7 @@ A validação é ativada por padrão (`--validate`):
 - Garante ausência de placeholders não convertidos (`@@PHn@@`).
 - Inspeciona o log do LaTeX (`.log`) e extrai a mensagem de erro exata iniciada por `!` (ex: `! Undefined control sequence`, `! LaTeX Error: ...`), exibindo o diagnóstico exato no terminal em caso de falhas de compilação.
 - Identifica referências e citações não resolvidas, além de avisos de `Overfull \hbox`.
+- Com regras de tópicos ativas, informa cada seção obrigatória ausente para o perfil selecionado.
 
 ### Modo Estrito para Pipelines (CI/CD)
 
@@ -569,7 +602,7 @@ A validação é ativada por padrão (`--validate`):
 md2tex documento.md --strict
 ```
 
-No modo estrito (`--strict`), qualquer inconsistência ou aviso de validação faz o comando encerrar com código de erro não-zero, interrompendo a execução de pipelines de automação.
+No modo estrito (`--strict`), tópicos obrigatórios pendentes encerram o comando com código de erro não-zero antes de gerar ou alterar o TEX. Os demais erros de validação existentes também continuam bloqueando a saída.
 
 ---
 
@@ -593,6 +626,7 @@ Usage: md2tex [OPTIONS] INPUT_FILE
 
 Options:
   -o, --output FILE                  Caminho do arquivo TEX de saída.
+  --rules FILE                       Caminho do YAML de regras de tópicos.
   --type [report|meeting-minutes|adr|technical-plan]
                                      Perfil documental a ser utilizado.
   --title TEXT                       Título do documento.
@@ -606,7 +640,7 @@ Options:
   --template FILE                    Template Jinja2 customizado (.tex.j2).
   --pdf / --no-pdf                   Habilita ou desabilita a compilação PDF.
   --validate / --no-validate         Habilita ou desabilita as validações.
-  --strict                           Modo estrito (falha em qualquer aviso/erro).
+  --strict                           Bloqueia a saída para tópicos obrigatórios pendentes.
   --toc / --no-toc                   Inclui ou omite o sumário.
   --engine [xelatex|lualatex|pdflatex]
                                      Motor de compilação LaTeX.

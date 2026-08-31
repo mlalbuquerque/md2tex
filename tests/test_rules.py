@@ -40,3 +40,12 @@ def test_initialize_rules_does_not_overwrite_without_force(tmp_path: Path):
     with pytest.raises(ConfigError, match="já existe"):
         initialize_rules(target)
     assert target.read_bytes() == original
+
+
+def test_rules_template_contains_inactive_examples_for_all_profiles(tmp_path: Path):
+    target = initialize_rules(tmp_path / "rules.yaml")
+    content = target.read_text(encoding="utf-8")
+    for profile in ("default", "report", "meeting-minutes", "adr", "technical-plan"):
+        assert f"#   {profile}:" in content
+    assert load_rules(target) == {}
+    assert "document_class:" not in content

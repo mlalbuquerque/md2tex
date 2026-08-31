@@ -56,11 +56,11 @@
 
 **Independent Test**: `md2tex rules init` cria exemplos comentados para cinco perfis; a repetição sem `--force` preserva bytes; regras distintas para ADR e relatório só afetam o perfil indicado.
 
-- [ ] T016 [P] [US2] Add CLI contract tests for `md2tex rules init`, explicit destination, safe overwrite refusal, and `--force` in tests/test_cli.py
-- [ ] T017 [P] [US2] Add template-content tests covering commented inactive examples for all profiles in tests/test_rules.py
-- [ ] T018 [US2] Implement the `md2tex rules init [--rules PATH] [--force]` command and actionable creation/overwrite diagnostics in src/md2tex/cli.py
-- [ ] T019 [US2] Ensure the generated rules file remains separate from style configuration and uses only profile IDs from src/md2tex/profiles.py in src/md2tex/rules.py
-- [ ] T020 [US2] Run the User Story 2 initialization and per-profile isolation scenarios in tests/test_rules.py tests/test_cli.py tests/test_integration.py
+- [X] T016 [P] [US2] Add CLI contract tests for `md2tex rules init`, explicit destination, safe overwrite refusal, and `--force` in tests/test_cli.py
+- [X] T017 [P] [US2] Add template-content tests covering commented inactive examples for all profiles in tests/test_rules.py
+- [X] T018 [US2] Implement the `md2tex rules init [--rules PATH] [--force]` command and actionable creation/overwrite diagnostics in src/md2tex/cli.py
+- [X] T019 [US2] Ensure the generated rules file remains separate from style configuration and uses only profile IDs from src/md2tex/profiles.py in src/md2tex/rules.py
+- [X] T020 [US2] Run the User Story 2 initialization and per-profile isolation scenarios in tests/test_rules.py tests/test_cli.py tests/test_integration.py
 
 **Checkpoint**: US2 is independently usable to bootstrap and tailor content rules safely.
 
@@ -72,11 +72,11 @@
 
 **Independent Test**: O mesmo documento incompleto gera TEX com aviso normalmente, mas com `--strict` falha antes de criar ou modificar o arquivo de saída.
 
-- [ ] T021 [P] [US3] Add strict-mode tests for absent output and byte-for-byte preserved existing output in tests/test_integration.py
-- [ ] T022 [P] [US3] Add CLI diagnostic and exit-behavior tests for strict missing topics in tests/test_cli.py
-- [ ] T023 [US3] Raise ValidationError for required-topic pendencies before Mermaid, Pandoc, template rendering, ensure_parent, and output writes in src/md2tex/converter.py
-- [ ] T024 [US3] Preserve `--no-validate` suppression of topic checks while keeping explicitly selected invalid rules fatal in src/md2tex/converter.py
-- [ ] T025 [US3] Run the User Story 3 normal-versus-strict scenarios in tests/test_cli.py tests/test_integration.py
+- [X] T021 [P] [US3] Add strict-mode tests for absent output and byte-for-byte preserved existing output in tests/test_integration.py
+- [X] T022 [P] [US3] Add CLI diagnostic and exit-behavior tests for strict missing topics in tests/test_cli.py
+- [X] T023 [US3] Raise ValidationError for required-topic pendencies before Mermaid, Pandoc, template rendering, ensure_parent, and output writes in src/md2tex/converter.py
+- [X] T024 [US3] Preserve `--no-validate` suppression of topic checks while keeping explicitly selected invalid rules fatal in src/md2tex/converter.py
+- [X] T025 [US3] Run the User Story 3 normal-versus-strict scenarios in tests/test_cli.py tests/test_integration.py
 
 **Checkpoint**: Todas as histórias são independentes e o modo estrito protege o destino de saída.
 
@@ -86,11 +86,11 @@
 
 **Purpose**: Publicar a feature, alinhar versão e validar o fluxo completo.
 
-- [ ] T026 [P] Update the public version to 2.4.0 in pyproject.toml and src/md2tex/__init__.py
-- [ ] T027 [P] Replace the planned 2.4.0 entry with released topic-validation functionality in RELEASES.md
-- [ ] T028 [P] Document rule creation, YAML structure, customization, `--rules`, normal validation, strict validation, and `--no-validate` in README.md
-- [ ] T029 Run ruff and the complete pytest suite for the feature in pyproject.toml
-- [ ] T030 Execute every scenario in specs/003-validate-document-topics/quickstart.md and correct discrepancies in README.md
+- [X] T026 [P] Update the public version to 2.4.0 in pyproject.toml and src/md2tex/__init__.py
+- [X] T027 [P] Replace the planned 2.4.0 entry with released topic-validation functionality in RELEASES.md
+- [X] T028 [P] Document rule creation, YAML structure, customization, `--rules`, normal validation, strict validation, and `--no-validate` in README.md
+- [X] T029 Run ruff and the complete pytest suite for the feature in pyproject.toml
+- [X] T030 Execute every scenario in specs/003-validate-document-topics/quickstart.md and correct discrepancies in README.md
 
 ---
 

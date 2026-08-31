@@ -15,7 +15,7 @@ def write_valid_config(path: Path) -> Path:
 def test_cli_version_identity():
     result = CliRunner().invoke(main, ["--version"])
     assert result.exit_code == 0
-    assert "md2tex, version 2.3.0" in result.output
+    assert "md2tex, version 2.4.0" in result.output
 
 
 def test_cli_help_identity():
@@ -34,6 +34,42 @@ def test_cli_init_creates_config_and_refuses_overwrite():
         assert target.exists()
         assert "Configuração criada" in result.output
         assert runner.invoke(main, ["init", "--config", str(target)]).exit_code == 1
+
+
+def test_cli_rules_init_creates_explicit_destination_and_requires_force(tmp_path: Path):
+    runner = CliRunner()
+    target = tmp_path / "nested" / "rules.yaml"
+    result = runner.invoke(main, ["rules", "init", "--rules", str(target)])
+    assert result.exit_code == 0
+    assert target.exists()
+    assert "Regras criadas" in result.output
+
+    original = target.read_bytes()
+    repeated = runner.invoke(main, ["rules", "init", "--rules", str(target)])
+    assert repeated.exit_code == 1
+    assert "já existe" in repeated.output
+    assert target.read_bytes() == original
+
+    forced = runner.invoke(main, ["rules", "init", "--rules", str(target), "--force"])
+    assert forced.exit_code == 0
+    assert target.read_text(encoding="utf-8").startswith("# Regras de tópicos")
+
+
+def test_cli_rules_init_uses_default_destination(tmp_path: Path, monkeypatch):
+    target = tmp_path / "config" / "rules.yaml"
+    monkeypatch.setattr("md2tex.rules.DEFAULT_RULES_PATH", target)
+
+    result = CliRunner().invoke(main, ["rules", "init"])
+
+    assert result.exit_code == 0
+    assert target.exists()
+    assert str(target.resolve()) in result.output
+
+
+def test_cli_rules_requires_init_subcommand():
+    result = CliRunner().invoke(main, ["rules"])
+    assert result.exit_code == 2
+    assert "md2tex rules init" in result.output
 
 
 def test_cli_check_deps():
@@ -168,12 +204,13 @@ def test_cli_explicit_missing_or_invalid_rules_fail_before_conversion(tmp_path: 
 
     monkeypatch.setattr("md2tex.cli.convert", fake_convert)
     missing = CliRunner().invoke(
-        main, [str(doc), "-c", str(config_file), "--rules", str(tmp_path / "missing.yaml")]
+        main,
+        [str(doc), "-c", str(config_file), "--rules", str(tmp_path / "missing.yaml"), "--no-validate"],
     )
     invalid_path = tmp_path / "invalid.yaml"
     invalid_path.write_text("not-rules: {}\n", encoding="utf-8")
     invalid = CliRunner().invoke(
-        main, [str(doc), "-c", str(config_file), "--rules", str(invalid_path)]
+        main, [str(doc), "-c", str(config_file), "--rules", str(invalid_path), "--no-validate"]
     )
 
     assert missing.exit_code == 1
@@ -181,3 +218,29 @@ def test_cli_explicit_missing_or_invalid_rules_fail_before_conversion(tmp_path: 
     assert "Arquivo de regras não encontrado" in missing.output
     assert "Regras inválidas" in invalid.output
     assert called
+
+
+def test_cli_strict_topics_reports_error_and_no_validate_suppresses_check(tmp_path: Path, monkeypatch):
+    doc = tmp_path / "input.md"
+    doc.write_text("---\ntitle: Documento\n---\n\n# Contexto\n", encoding="utf-8")
+    config_file = write_valid_config(tmp_path / "config.yaml")
+    rules_file = tmp_path / "rules.yaml"
+    rules_file.write_text("rules:\n  adr:\n    - Decisão\n", encoding="utf-8")
+    output = tmp_path / "output.tex"
+
+    strict = CliRunner().invoke(
+        main,
+        [str(doc), "-c", str(config_file), "--rules", str(rules_file), "--type", "adr", "--strict", "-o", str(output)],
+    )
+    assert strict.exit_code == 1
+    assert "Validação interrompeu a geração" in strict.output
+    assert "Decisão" in strict.output
+    assert not output.exists()
+
+    monkeypatch.setattr("md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: "Texto")
+    no_validate = CliRunner().invoke(
+        main,
+        [str(doc), "-c", str(config_file), "--rules", str(rules_file), "--type", "adr", "--strict", "--no-validate", "-o", str(output)],
+    )
+    assert no_validate.exit_code == 0
+    assert output.exists()
