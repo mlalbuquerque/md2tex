@@ -30,6 +30,27 @@ class DocumentMetadata:
     subtitle: str = ""
     status: str = ""
     extra: dict[str, Any] = field(default_factory=dict)
+    meeting_minutes: MeetingMinutesData | None = None
+
+
+@dataclass(slots=True)
+class Participant:
+    """Participante normalizado de uma memória de reunião."""
+
+    name: str
+    role: str
+    group: str
+
+
+@dataclass(slots=True)
+class MeetingMinutesData:
+    """Dados estruturados exclusivos do perfil ``meeting-minutes``."""
+
+    period_start: str = ""
+    period_end: str = ""
+    client_participants: list[Participant] = field(default_factory=list)
+    netra_participants: list[Participant] = field(default_factory=list)
+    has_no_pending_items: bool = False
 
 
 @dataclass(slots=True)

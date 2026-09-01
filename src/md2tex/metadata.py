@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from .models import ConversionOptions, DocumentMetadata
+from .models import ConversionOptions, DocumentMetadata, MeetingMinutesData, Participant
 from .profiles import get_profile
 from .utils import extract_title
 
@@ -48,6 +48,9 @@ def build_metadata(
         "document-type",
     }
     extra = {key: value for key, value in raw.items() if key not in known}
+    meeting_minutes = (
+        build_meeting_minutes_data(raw) if options.profile == "meeting-minutes" else None
+    )
 
     return (
         DocumentMetadata(
@@ -60,6 +63,7 @@ def build_metadata(
             subtitle=subtitle,
             status=status,
             extra=extra,
+            meeting_minutes=meeting_minutes,
         ),
         body_without_h1 if extracted_title else body,
     )
@@ -71,3 +75,32 @@ def _as_text(value: Any) -> str:
     if isinstance(value, (list, tuple)):
         return ", ".join(str(item) for item in value)
     return str(value)
+
+
+def build_meeting_minutes_data(raw: dict[str, Any]) -> MeetingMinutesData:
+    """Normaliza período e participantes sem ocultar erros do validador."""
+    period = raw.get("period")
+    period_values = period if isinstance(period, dict) else {}
+    participants = raw.get("participants")
+    participant_groups = participants if isinstance(participants, dict) else {}
+
+    return MeetingMinutesData(
+        period_start=_as_text(period_values.get("start")).strip(),
+        period_end=_as_text(period_values.get("end")).strip(),
+        client_participants=_normalize_participants(participant_groups.get("client"), "client"),
+        netra_participants=_normalize_participants(participant_groups.get("netra"), "netra"),
+    )
+
+
+def _normalize_participants(value: Any, group: str) -> list[Participant]:
+    if not isinstance(value, list):
+        return []
+    return [
+        Participant(
+            name=_as_text(item.get("name")).strip(),
+            role=_as_text(item.get("role")).strip(),
+            group=group,
+        )
+        for item in value
+        if isinstance(item, dict)
+    ]

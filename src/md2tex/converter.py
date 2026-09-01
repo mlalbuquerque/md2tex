@@ -20,6 +20,7 @@ from .validator import (
     has_errors,
     missing_required_topics,
     validate_markdown,
+    validate_meeting_minutes,
     validate_metadata,
     validate_tex,
 )
@@ -54,6 +55,16 @@ def convert(options: ConversionOptions) -> ConversionResult:
 
     if options.validate:
         messages.extend(validate_metadata(metadata, options.profile))
+        if options.profile == "meeting-minutes":
+            effective_raw_metadata = dict(raw_metadata)
+            for key, value in (
+                ("client", options.client),
+                ("author", options.author),
+                ("date", options.date),
+            ):
+                if value is not None:
+                    effective_raw_metadata[key] = value
+            messages.extend(validate_meeting_minutes(effective_raw_metadata, markdown))
         messages.extend(validate_markdown(markdown, source_dir))
         for topic in missing_required_topics(headings_markdown, rules.get(options.profile, [])):
             messages.append(

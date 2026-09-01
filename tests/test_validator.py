@@ -56,7 +56,6 @@ def test_validate_log_explains_package_option_clash():
     assert any("page_geometry: {}" in message.message for message in messages)
 
 
-@pytest.mark.xfail(strict=True, reason="T006 implementará a validação da memória de reunião")
 def test_meeting_minutes_validator_accepts_the_canonical_complete_fixture():
     raw, body = parse_frontmatter(
         (MEETING_MINUTES_FIXTURES / "complete.md").read_text(encoding="utf-8")
@@ -65,7 +64,6 @@ def test_meeting_minutes_validator_accepts_the_canonical_complete_fixture():
     assert _meeting_minutes_messages(raw, body) == []
 
 
-@pytest.mark.xfail(strict=True, reason="T006 implementará diagnósticos nominais da memória")
 @pytest.mark.parametrize(
     ("raw", "body", "expected_path"),
     [
@@ -80,7 +78,6 @@ def test_meeting_minutes_validator_names_missing_metadata_and_sections(
     assert any(expected_path in message.message for message in _meeting_minutes_messages(raw, body))
 
 
-@pytest.mark.xfail(strict=True, reason="T006 implementará validação de participantes e pendências")
 @pytest.mark.parametrize(
     ("raw", "body", "expected_path"),
     [

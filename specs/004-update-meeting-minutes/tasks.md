@@ -22,11 +22,11 @@
 
 **Purpose**: Criar a representação estruturada da memória e o fluxo comum de validação antes da conversão.
 
-- [ ] T004 Add typed Participant and MeetingMinutesData representations to src/md2tex/models.py
-- [ ] T005 Parse and normalize `period` and `participants` front matter for the `meeting-minutes` profile in src/md2tex/metadata.py
-- [ ] T006 Validate the normalized profile-specific data and required body-section content with named diagnostics in src/md2tex/validator.py
-- [ ] T007 Forward profile-specific metadata validation messages before Mermaid, Pandoc, template rendering, and output writes in src/md2tex/converter.py
-- [ ] T008 Run foundational metadata and validator tests in tests/test_metadata.py and tests/test_validator.py
+- [X] T004 Add typed Participant and MeetingMinutesData representations to src/md2tex/models.py
+- [X] T005 Parse and normalize `period` and `participants` front matter for the `meeting-minutes` profile in src/md2tex/metadata.py
+- [X] T006 Validate the normalized profile-specific data and required body-section content with named diagnostics in src/md2tex/validator.py
+- [X] T007 Forward profile-specific metadata validation messages before Mermaid, Pandoc, template rendering, and output writes in src/md2tex/converter.py
+- [X] T008 Run foundational metadata and validator tests in tests/test_metadata.py and tests/test_validator.py
 
 **Checkpoint**: A estrutura YAML e o conteúdo obrigatório da memória podem ser interpretados e validados sem afetar outros perfis.
 

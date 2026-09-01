@@ -97,6 +97,9 @@ def test_complete_meeting_minutes_front_matter_keeps_structured_profile_metadata
     assert metadata.extra["period"] == {"start": "09:00", "end": "10:30"}
     assert metadata.extra["participants"]["client"][0]["role"] == "Gerente de Produto"
     assert metadata.extra["participants"]["netra"][0]["name"] == "Bruno Netra"
+    assert metadata.meeting_minutes is not None
+    assert metadata.meeting_minutes.period_start == "09:00"
+    assert metadata.meeting_minutes.netra_participants[0].group == "netra"
     assert "Alinhar o escopo e os próximos marcos do Projeto Aurora." in body_without_title
 
 
