@@ -1,3 +1,8 @@
+from pathlib import Path
+
+import pytest
+
+from md2tex.frontmatter import parse_frontmatter
 from md2tex.validator import (
     extract_headings,
     has_errors,
@@ -5,6 +10,15 @@ from md2tex.validator import (
     validate_log,
     validate_tex,
 )
+
+MEETING_MINUTES_FIXTURES = Path(__file__).parent / "fixtures" / "meeting_minutes"
+
+
+def _meeting_minutes_messages(raw: dict, body: str):
+    """Contrato de validação a ser implementado em T006."""
+    from md2tex.validator import validate_meeting_minutes
+
+    return validate_meeting_minutes(raw, body)
 
 
 def test_extract_headings_handles_atx_setext_and_fenced_code():
@@ -40,3 +54,60 @@ def test_validate_log_extracts_latex_errors():
 def test_validate_log_explains_package_option_clash():
     messages = validate_log("! LaTeX Error: Option clash for package geometry.\n")
     assert any("page_geometry: {}" in message.message for message in messages)
+
+
+@pytest.mark.xfail(strict=True, reason="T006 implementará a validação da memória de reunião")
+def test_meeting_minutes_validator_accepts_the_canonical_complete_fixture():
+    raw, body = parse_frontmatter(
+        (MEETING_MINUTES_FIXTURES / "complete.md").read_text(encoding="utf-8")
+    )
+
+    assert _meeting_minutes_messages(raw, body) == []
+
+
+@pytest.mark.xfail(strict=True, reason="T006 implementará diagnósticos nominais da memória")
+@pytest.mark.parametrize(
+    ("raw", "body", "expected_path"),
+    [
+        ({}, "", "client"),
+        ({"client": "Cliente", "author": "Produtor", "date": "2026-08-31", "period": {"start": "09:00"}}, "", "period.end"),
+        ({"client": "Cliente", "author": "Produtor", "date": "2026-08-31", "period": {"start": "09:00", "end": "10:00"}}, "# Pendências\n\nSem pendências\n", "Objetivos da Reunião"),
+    ],
+)
+def test_meeting_minutes_validator_names_missing_metadata_and_sections(
+    raw: dict, body: str, expected_path: str
+):
+    assert any(expected_path in message.message for message in _meeting_minutes_messages(raw, body))
+
+
+@pytest.mark.xfail(strict=True, reason="T006 implementará validação de participantes e pendências")
+@pytest.mark.parametrize(
+    ("raw", "body", "expected_path"),
+    [
+        (
+            {
+                "client": "Cliente",
+                "author": "Produtor",
+                "date": "2026-08-31",
+                "period": {"start": "09:00", "end": "10:00"},
+                "participants": {"netra": [{"name": "Pessoa"}]},
+            },
+            "# Objetivos da Reunião\n\nOK\n# Tópicos Abordados\n\nOK\n# Considerações Gerais e Definições\n\nOK\n# Pendências\n\nSem pendências\n",
+            "participants.netra[0].role",
+        ),
+        (
+            {
+                "client": "Cliente",
+                "author": "Produtor",
+                "date": "2026-08-31",
+                "period": {"start": "09:00", "end": "10:00"},
+            },
+            "# Objetivos da Reunião\n\nOK\n# Tópicos Abordados\n\nOK\n# Considerações Gerais e Definições\n\nOK\n# Pendências\n\n| Pendência | Responsável | Prazo para Solução |\n|---|---|---|\n| Enviar proposta |  | 2026-09-05 |\n",
+            "Pendências[1].Responsável",
+        ),
+    ],
+)
+def test_meeting_minutes_validator_names_invalid_participants_and_pendency_rows(
+    raw: dict, body: str, expected_path: str
+):
+    assert any(expected_path in message.message for message in _meeting_minutes_messages(raw, body))

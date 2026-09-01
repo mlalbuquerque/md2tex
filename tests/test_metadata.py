@@ -2,8 +2,11 @@ from pathlib import Path
 
 import pytest
 
+from md2tex.frontmatter import parse_frontmatter
 from md2tex.metadata import build_metadata
 from md2tex.models import ConversionOptions
+
+MEETING_MINUTES_FIXTURES = Path(__file__).parent / "fixtures" / "meeting_minutes"
 
 
 @pytest.mark.parametrize(
@@ -70,3 +73,47 @@ def test_cover_templates_group_document_type_with_identification(template_name: 
     assert template.index("metadata.document_type") > template.index("\\vfill")
     assert template.index("metadata.document_type") < template.rindex("metadata.author")
     assert template.index("metadata.document_type") > template.index("metadata.subtitle")
+
+
+def test_complete_meeting_minutes_front_matter_keeps_structured_profile_metadata():
+    raw, body = parse_frontmatter(
+        (MEETING_MINUTES_FIXTURES / "complete.md").read_text(encoding="utf-8")
+    )
+
+    metadata, body_without_title = build_metadata(
+        raw,
+        body,
+        ConversionOptions(
+            input_path=Path("meeting-minutes.md"),
+            output_path=Path("meeting-minutes.tex"),
+            profile="meeting-minutes",
+        ),
+    )
+
+    assert metadata.document_type == "Memória de Reunião"
+    assert metadata.client == "Cliente Aurora / Projeto Aurora (NEP-001)"
+    assert metadata.author == "Marina Silva"
+    assert metadata.date == "2026-08-31"
+    assert metadata.extra["period"] == {"start": "09:00", "end": "10:30"}
+    assert metadata.extra["participants"]["client"][0]["role"] == "Gerente de Produto"
+    assert metadata.extra["participants"]["netra"][0]["name"] == "Bruno Netra"
+    assert "Alinhar o escopo e os próximos marcos do Projeto Aurora." in body_without_title
+
+
+def test_no_pendency_meeting_minutes_allows_omitted_participant_groups_in_front_matter():
+    raw, body = parse_frontmatter(
+        (MEETING_MINUTES_FIXTURES / "no-pendency.md").read_text(encoding="utf-8")
+    )
+
+    metadata, body_without_title = build_metadata(
+        raw,
+        body,
+        ConversionOptions(
+            input_path=Path("meeting-minutes.md"),
+            output_path=Path("meeting-minutes.tex"),
+            profile="meeting-minutes",
+        ),
+    )
+
+    assert "participants" not in metadata.extra
+    assert "Sem pendências" in body_without_title
