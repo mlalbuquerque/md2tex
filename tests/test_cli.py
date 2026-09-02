@@ -6,9 +6,11 @@ from click.testing import CliRunner
 from md2tex.cli import main
 from md2tex.models import ConversionResult
 
+MEETING_MINUTES_FIXTURES = Path(__file__).parent / "fixtures" / "meeting_minutes"
 
 def write_valid_config(path: Path) -> Path:
     path.write_text(files("md2tex").joinpath("templates", "config.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+
     return path
 
 
@@ -244,3 +246,50 @@ def test_cli_strict_topics_reports_error_and_no_validate_suppresses_check(tmp_pa
     )
     assert no_validate.exit_code == 0
     assert output.exists()
+
+def test_cli_meeting_minutes_uses_front_matter_configured_style_and_cli_precedence(
+    tmp_path: Path, monkeypatch
+):
+    source = tmp_path / "meeting-minutes.md"
+    source.write_text(
+        MEETING_MINUTES_FIXTURES.joinpath("complete.md").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    config_file = write_valid_config(tmp_path / "config.yaml")
+    config_file.write_text(
+        config_file.read_text(encoding="utf-8").replace(
+            "style_packages:\n", "style_packages:\n  - letterhead.sty\n"
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "letterhead.sty").write_text("% user-owned letterhead\n", encoding="utf-8")
+    monkeypatch.setattr("md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: "Corpo")
+    output = tmp_path / "meeting-minutes.tex"
+
+    result = CliRunner().invoke(
+        main,
+        [
+            str(source), "--type", "meeting-minutes", "-c", str(config_file),
+            "-o", str(output), "--client", "Cliente via CLI", "--author", "Autor via CLI",
+            "--date", "2026-09-01", "--no-mermaid", "--force",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    content = output.read_text(encoding="utf-8")
+    assert "\\usepackage{letterhead}" in content
+    assert "Cliente via CLI" in content
+    assert "Autor via CLI" in content
+    assert "2026-09-01" in content
+    assert "09:00 -- 10:30" in content
+
+
+def test_cli_strict_reports_invalid_meeting_minutes_and_does_not_create_output(tmp_path: Path):
+    source = tmp_path / "invalid-meeting-minutes.md"
+    source.write_text((MEETING_MINUTES_FIXTURES / "complete.md").read_text(encoding="utf-8").replace("client: Cliente Aurora / Projeto Aurora (NEP-001)\n", ""), encoding="utf-8")
+    config_file = write_valid_config(tmp_path / "config.yaml")
+    output = tmp_path / "meeting-minutes.tex"
+    result = CliRunner().invoke(main, [str(source), "--type", "meeting-minutes", "-c", str(config_file), "-o", str(output), "--strict", "--no-mermaid", "--force"])
+    assert result.exit_code == 1
+    assert "client" in result.output
+    assert not output.exists()

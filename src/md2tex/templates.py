@@ -34,6 +34,7 @@ def render_template(
     engine: str,
     used_svg: bool,
     source_dir: Path,
+    meeting_minutes: object | None = None,
 ) -> str:
     environment = Environment(
         loader=FileSystemLoader(str(template_path.parent)),
@@ -57,6 +58,7 @@ def render_template(
         user_config=user_config,
         toc=toc,
         engine=engine,
+        meeting_minutes=meeting_minutes,
         used_svg=used_svg,
         source_dir=source_dir.as_posix().rstrip("/") + "/",
     )

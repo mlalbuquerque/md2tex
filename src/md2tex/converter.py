@@ -75,9 +75,12 @@ def convert(options: ConversionOptions) -> ConversionResult:
                 )
             )
 
-    topic_pendencies = [message for message in messages if message.source == "topics"]
-    if options.strict and topic_pendencies:
-        errors = "\n".join(f"- {message.message}" for message in topic_pendencies)
+    strict_pendencies = [
+        message for message in messages
+        if message.source in {"topics", "meeting-minutes"}
+    ]
+    if options.strict and strict_pendencies:
+        errors = "\n".join(f"- {message.message}" for message in strict_pendencies)
         raise ValidationError(f"Validação interrompeu a geração:\n{errors}")
 
     figures_dir = options.figures_dir
@@ -145,6 +148,7 @@ def convert(options: ConversionOptions) -> ConversionResult:
         engine=options.engine,
         used_svg=mermaid_result.used_svg,
         source_dir=source_dir,
+        meeting_minutes=metadata.meeting_minutes,
     )
 
     if options.validate:

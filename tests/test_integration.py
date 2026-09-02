@@ -10,11 +10,62 @@ from md2tex.converter import convert
 from md2tex.errors import ConfigError, ValidationError
 from md2tex.models import ConversionOptions
 
+MEETING_MINUTES_FIXTURES = Path(__file__).parent / "fixtures" / "meeting_minutes"
 
 def config_for(tmp_path: Path):
     path = tmp_path / "config.yaml"
     path.write_text(files("md2tex").joinpath("templates", "config.yaml").read_text(encoding="utf-8"), encoding="utf-8")
     return load_config(path)
+
+def test_complete_meeting_minutes_renders_identification_participants_and_pendencies(
+    tmp_path: Path, monkeypatch
+):
+    source = tmp_path / "meeting-minutes.md"
+    source.write_text(
+        (MEETING_MINUTES_FIXTURES / "complete.md").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tmp_path / "letterhead.sty").write_text("% user-owned letterhead\n", encoding="utf-8")
+    config = config_for(tmp_path)
+    config.style_packages.append("letterhead.sty")
+    monkeypatch.setattr(
+        "md2tex.converter.markdown_to_latex_fragment",
+        lambda *args, **kwargs: (
+            "\\section{Pendências}\n"
+            "\\begin{longtable}{lll}\n"
+            "Enviar proposta revisada & Bruno Netra & 2026-09-05\\\\\n"
+            "Validar orçamento & Ana Cliente & 2026-09-08\\\\\n"
+            "\\end{longtable}"
+        ),
+    )
+    output = tmp_path / "meeting-minutes.tex"
+    result = convert(
+        ConversionOptions(
+            input_path=source,
+            output_path=output,
+            config_path=tmp_path / "config.yaml",
+            user_config=config,
+            profile="meeting-minutes",
+            mermaid=False,
+            force=True,
+        )
+    )
+
+    assert not [message for message in result.messages if message.source == "meeting-minutes"]
+    content = output.read_text(encoding="utf-8")
+    for expected in (
+        "\\usepackage{letterhead}",
+        "\\section*{Identificação da Reunião}",
+        "Cliente Aurora / Projeto Aurora (NEP-001)",
+        "09:00 -- 10:30",
+        "\\subsection*{Participantes do Cliente}",
+        "Ana Cliente & Gerente de Produto",
+        "\\subsection*{Participantes da Netra}",
+        "Bruno Netra & Diretor de Projetos",
+        "Enviar proposta revisada & Bruno Netra & 2026-09-05",
+        "Validar orçamento & Ana Cliente & 2026-09-08",
+    ):
+        assert expected in content
 
 
 @pytest.mark.skipif(shutil.which("pandoc") is None, reason="Pandoc não instalado")
@@ -267,3 +318,20 @@ def test_strict_topics_preserves_existing_output(tmp_path: Path):
     with pytest.raises(ValidationError, match="Validação interrompeu"):
         convert(_strict_topic_options(tmp_path, output))
     assert output.read_bytes() == b"conteudo existente"
+
+
+@pytest.mark.parametrize("existing", [False, True])
+def test_strict_invalid_meeting_minutes_stops_before_external_work(tmp_path: Path, monkeypatch, existing: bool):
+    source = tmp_path / "invalid-meeting-minutes.md"
+    source.write_text((MEETING_MINUTES_FIXTURES / "complete.md").read_text(encoding="utf-8").replace("client: Cliente Aurora / Projeto Aurora (NEP-001)\n", ""), encoding="utf-8")
+    output = tmp_path / "meeting-minutes.tex"
+    expected = b"conteudo existente"
+    if existing: output.write_bytes(expected)
+    monkeypatch.setattr("md2tex.converter.render_mermaid_blocks", lambda *args, **kwargs: pytest.fail("Mermaid não deve executar"))
+    monkeypatch.setattr("md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: pytest.fail("Pandoc não deve executar"))
+    with pytest.raises(ValidationError, match="client"):
+        convert(ConversionOptions(input_path=source, output_path=output, user_config=config_for(tmp_path), profile="meeting-minutes", strict=True, force=True))
+    if existing:
+        assert output.read_bytes() == expected
+    else:
+        assert not output.exists()

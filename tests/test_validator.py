@@ -108,3 +108,6 @@ def test_meeting_minutes_validator_names_invalid_participants_and_pendency_rows(
     raw: dict, body: str, expected_path: str
 ):
     assert any(expected_path in message.message for message in _meeting_minutes_messages(raw, body))
+
+def test_meeting_minutes_validator_names_every_required_value():
+    assert all(path in "\n".join(message.message for message in _meeting_minutes_messages({}, "")) for path in ("client", "author", "date", "period.start", "period.end", "Objetivos da Reunião", "Tópicos Abordados", "Considerações Gerais e Definições", "Pendências"))

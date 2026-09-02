@@ -65,7 +65,7 @@ def build_metadata(
             extra=extra,
             meeting_minutes=meeting_minutes,
         ),
-        body_without_h1 if extracted_title else body,
+        body_without_h1 if extracted_title and not (options.title or _as_text(raw.get("title"))) else body,
     )
 
 

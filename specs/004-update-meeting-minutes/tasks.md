@@ -40,15 +40,15 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Add integration coverage for a documented complete meeting-minutes example with at least two participants and two pendencies, including participant groups and the pendency table in tests/test_integration.py
-- [ ] T010 [P] [US1] Add CLI coverage for `--type meeting-minutes` using YAML front matter and configured style packages in tests/test_cli.py
+- [X] T009 [P] [US1] Add integration coverage for a documented complete meeting-minutes example with at least two participants and two pendencies, including participant groups and the pendency table in tests/test_integration.py
+- [X] T010 [P] [US1] Add CLI coverage for `--type meeting-minutes` using YAML front matter and configured style packages in tests/test_cli.py
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Extend the meeting-minutes template context with normalized meeting data in src/md2tex/converter.py
-- [ ] T012 [US1] Render identification, period, client and Netra participant groups, and pendency table without embedding style defaults in src/md2tex/templates/meeting-minutes.tex.j2
-- [ ] T013 [US1] Preserve CLI-over-front-matter precedence for `client`, `author`, and `date` in meeting-minutes data in src/md2tex/metadata.py
-- [ ] T014 [US1] Run the complete-memory scenarios from tests/test_metadata.py tests/test_validator.py tests/test_cli.py and tests/test_integration.py
+- [X] T011 [US1] Extend the meeting-minutes template context with normalized meeting data in src/md2tex/converter.py
+- [X] T012 [US1] Render identification, period, client and Netra participant groups, and pendency table without embedding style defaults in src/md2tex/templates/meeting-minutes.tex.j2
+- [X] T013 [US1] Preserve CLI-over-front-matter precedence for `client`, `author`, and `date` in meeting-minutes data in src/md2tex/metadata.py
+- [X] T014 [US1] Run the complete-memory scenarios from tests/test_metadata.py tests/test_validator.py tests/test_cli.py and tests/test_integration.py
 
 **Checkpoint**: Uma memória completa é convertida no layout estrutural esperado, mantendo o style letterhead sob controle de `config.yaml`.
 
@@ -62,15 +62,15 @@
 
 ### Tests for User Story 2
 
-- [ ] T015 [P] [US2] Add parameterized tests for every required metadata field, required section, and invalid participant or pendency shape in tests/test_validator.py
-- [ ] T016 [P] [US2] Add integration tests proving strict mode avoids Mermaid/Pandoc and preserves missing or existing output for invalid meeting minutes in tests/test_integration.py
-- [ ] T017 [P] [US2] Add CLI diagnostic and exit-behavior coverage for invalid meeting-minutes metadata in tests/test_cli.py
+- [X] T015 [P] [US2] Add parameterized tests for every required metadata field, required section, and invalid participant or pendency shape in tests/test_validator.py
+- [X] T016 [P] [US2] Add integration tests proving strict mode avoids Mermaid/Pandoc and preserves missing or existing output for invalid meeting minutes in tests/test_integration.py
+- [X] T017 [P] [US2] Add CLI diagnostic and exit-behavior coverage for invalid meeting-minutes metadata in tests/test_cli.py
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Treat meeting-minutes validation pendencies as a pre-output strict gate with actionable ValidationError messages in src/md2tex/converter.py
-- [ ] T019 [US2] Ensure normal validation reports every named meeting-minutes pendency while preserving normal TEX generation in src/md2tex/converter.py
-- [ ] T020 [US2] Run missing-field and strict-preservation scenarios in tests/test_validator.py tests/test_cli.py and tests/test_integration.py
+- [X] T018 [US2] Treat meeting-minutes validation pendencies as a pre-output strict gate with actionable ValidationError messages in src/md2tex/converter.py
+- [X] T019 [US2] Ensure normal validation reports every named meeting-minutes pendency while preserving normal TEX generation in src/md2tex/converter.py
+- [X] T020 [US2] Run missing-field and strict-preservation scenarios in tests/test_validator.py tests/test_cli.py and tests/test_integration.py
 
 **Checkpoint**: Campos ausentes são diagnosticados nominalmente e o modo estrito protege o destino de saída antes de trabalho externo.
 
@@ -146,3 +146,10 @@ Setup → Foundational → US1 (MVP) → US2 → Polish
 3. Add named diagnostics and strict early blocking (US2).
 4. Add the `Sem pendências` and empty-groups flow (US3).
 5. Document the public contract and run the complete validation suite.
+
+
+---
+
+## Phase 7: Convergence
+
+- [X] T031 Assert absent output and byte-for-byte preservation of existing output after strict meeting-minutes validation failure per T016 / US2 (partial)

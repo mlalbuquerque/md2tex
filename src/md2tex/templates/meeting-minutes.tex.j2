@@ -49,6 +49,36 @@
   \vspace*{1.2cm}
 \end{titlepage}
 
+((% if meeting_minutes %))
+\section*{Identificação da Reunião}
+\begin{tabular}{ll}
+Cliente/Projeto: & ((* metadata.client|latex *))\\
+Produtor/a: & ((* metadata.author|latex *))\\
+Data: & ((* metadata.date|latex *))\\
+Período: & ((* meeting_minutes.period_start|latex *)) -- ((* meeting_minutes.period_end|latex *))\\
+\end{tabular}
+
+((% if meeting_minutes.client_participants %))
+\subsection*{Participantes do Cliente}
+\begin{tabular}{ll}
+Nome & Cargo/Função\\
+((% for participant in meeting_minutes.client_participants %))
+((* participant.name|latex *)) & ((* participant.role|latex *))\\
+((% endfor %))
+\end{tabular}
+((% endif %))
+
+((% if meeting_minutes.netra_participants %))
+\subsection*{Participantes da Netra}
+\begin{tabular}{ll}
+Nome & Cargo/Função\\
+((% for participant in meeting_minutes.netra_participants %))
+((* participant.name|latex *)) & ((* participant.role|latex *))\\
+((% endfor %))
+\end{tabular}
+((% endif %))
+((% endif %))
+
 ((% if toc %))
 \mdtexTableOfContents
 ((% endif %))
