@@ -335,3 +335,15 @@ def test_strict_invalid_meeting_minutes_stops_before_external_work(tmp_path: Pat
         assert output.read_bytes() == expected
     else:
         assert not output.exists()
+
+
+
+def test_no_pendency_meeting_minutes_renders_declaration_without_empty_groups(tmp_path: Path, monkeypatch):
+    source = tmp_path / "no-pendency.md"
+    source.write_text((MEETING_MINUTES_FIXTURES / "no-pendency.md").read_text(encoding="utf-8"), encoding="utf-8")
+    output = tmp_path / "no-pendency.tex"
+    monkeypatch.setattr("md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: "Corpo")
+    convert(ConversionOptions(input_path=source, output_path=output, user_config=config_for(tmp_path), profile="meeting-minutes", mermaid=False, force=True))
+    content = output.read_text(encoding="utf-8")
+    assert "Sem pendências" in content
+    assert "Participantes do Cliente" not in content and "Participantes da Netra" not in content

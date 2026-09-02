@@ -84,14 +84,14 @@
 
 ### Tests for User Story 3
 
-- [ ] T021 [P] [US3] Add validator cases for `Sem pendências`, empty participant groups, and incomplete pendency tables in tests/test_validator.py
-- [ ] T022 [P] [US3] Add integration coverage for rendering the no-pendency declaration and omitting empty participant groups in tests/test_integration.py
+- [X] T021 [P] [US3] Add validator cases for `Sem pendências`, empty participant groups, and incomplete pendency tables in tests/test_validator.py
+- [X] T022 [P] [US3] Add integration coverage for rendering the no-pendency declaration and omitting empty participant groups in tests/test_integration.py
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Recognize the exclusive `Sem pendências` declaration and distinguish it from missing or incomplete pendency content in src/md2tex/validator.py
-- [ ] T024 [US3] Render the no-pendency declaration and avoid empty participant-group artifacts in src/md2tex/templates/meeting-minutes.tex.j2
-- [ ] T025 [US3] Run no-pendency and empty-group scenarios in tests/test_validator.py and tests/test_integration.py
+- [X] T023 [US3] Recognize the exclusive `Sem pendências` declaration and distinguish it from missing or incomplete pendency content in src/md2tex/validator.py
+- [X] T024 [US3] Render the no-pendency declaration and avoid empty participant-group artifacts in src/md2tex/templates/meeting-minutes.tex.j2
+- [X] T025 [US3] Run no-pendency and empty-group scenarios in tests/test_validator.py and tests/test_integration.py
 
 **Checkpoint**: Reuniões internas ou sem ações são documentos válidos e continuam claramente representadas.
 
@@ -160,4 +160,4 @@ Setup → Foundational → US1 (MVP) → US2 → Polish
 ## Phase 8: Convergence
 
 - [ ] T032 Render `Sem pendências` and suppress empty participant-group artifacts per FR-008 / T024 (missing)
-- [ ] T033 Add no-pendency, empty-group, and incomplete-table coverage per T021–T022 (partial)
+- [X] T033 Add no-pendency, empty-group, and incomplete-table coverage per T021–T022 (partial)

@@ -111,3 +111,11 @@ def test_meeting_minutes_validator_names_invalid_participants_and_pendency_rows(
 
 def test_meeting_minutes_validator_names_every_required_value():
     assert all(path in "\n".join(message.message for message in _meeting_minutes_messages({}, "")) for path in ("client", "author", "date", "period.start", "period.end", "Objetivos da Reunião", "Tópicos Abordados", "Considerações Gerais e Definições", "Pendências"))
+
+
+
+def test_meeting_minutes_validator_accepts_no_pendency_and_rejects_incomplete_table():
+    raw, body = parse_frontmatter((MEETING_MINUTES_FIXTURES / "no-pendency.md").read_text(encoding="utf-8"))
+    assert _meeting_minutes_messages(raw, body) == []
+    invalid_body = body.replace("Sem pendências", "| Pendência | Responsável | Prazo para Solução |\n|---|---|---|\n| Ação | | 2026-09-01 |")
+    assert any("Pendências[1].Responsável" in message.message for message in _meeting_minutes_messages(raw, invalid_body))
