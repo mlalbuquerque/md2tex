@@ -153,3 +153,11 @@ Setup → Foundational → US1 (MVP) → US2 → Polish
 ## Phase 7: Convergence
 
 - [X] T031 Assert absent output and byte-for-byte preservation of existing output after strict meeting-minutes validation failure per T016 / US2 (partial)
+
+
+---
+
+## Phase 8: Convergence
+
+- [ ] T032 Render `Sem pendências` and suppress empty participant-group artifacts per FR-008 / T024 (missing)
+- [ ] T033 Add no-pendency, empty-group, and incomplete-table coverage per T021–T022 (partial)

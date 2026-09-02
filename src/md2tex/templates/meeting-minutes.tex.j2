@@ -79,6 +79,11 @@ Nome & Cargo/Função\\
 ((% endif %))
 ((% endif %))
 
+((% if meeting_minutes and meeting_minutes.has_no_pending_items %))
+\section*{Pendências}
+Sem pendências
+((% endif %))
+
 ((% if toc %))
 \mdtexTableOfContents
 ((% endif %))
