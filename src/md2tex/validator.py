@@ -188,6 +188,10 @@ def _table_cells(row: str) -> list[str]:
     return [cell.strip() for cell in row.strip().strip("|").split("|")]
 
 
+def has_no_pending_items(body: str) -> bool:
+    return _meeting_sections(body).get("pendências", "").strip() == "Sem pendências"
+
+
 def _non_empty_text(value: Any) -> bool:
     return value is not None and not isinstance(value, (dict, list, tuple, set)) and bool(str(value).strip())
 

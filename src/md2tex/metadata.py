@@ -5,6 +5,7 @@ from typing import Any
 
 from .models import ConversionOptions, DocumentMetadata, MeetingMinutesData, Participant
 from .profiles import get_profile
+from .validator import has_no_pending_items
 from .utils import extract_title
 
 
@@ -49,7 +50,7 @@ def build_metadata(
     }
     extra = {key: value for key, value in raw.items() if key not in known}
     meeting_minutes = (
-        build_meeting_minutes_data(raw) if options.profile == "meeting-minutes" else None
+        build_meeting_minutes_data(raw, body) if options.profile == "meeting-minutes" else None
     )
 
     return (
@@ -77,7 +78,7 @@ def _as_text(value: Any) -> str:
     return str(value)
 
 
-def build_meeting_minutes_data(raw: dict[str, Any]) -> MeetingMinutesData:
+def build_meeting_minutes_data(raw: dict[str, Any], body: str = "") -> MeetingMinutesData:
     """Normaliza período e participantes sem ocultar erros do validador."""
     period = raw.get("period")
     period_values = period if isinstance(period, dict) else {}
@@ -89,6 +90,7 @@ def build_meeting_minutes_data(raw: dict[str, Any]) -> MeetingMinutesData:
         period_end=_as_text(period_values.get("end")).strip(),
         client_participants=_normalize_participants(participant_groups.get("client"), "client"),
         netra_participants=_normalize_participants(participant_groups.get("netra"), "netra"),
+        has_no_pending_items=has_no_pending_items(body),
     )
 
 
