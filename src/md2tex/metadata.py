@@ -5,8 +5,8 @@ from typing import Any
 
 from .models import ConversionOptions, DocumentMetadata, MeetingMinutesData, Participant
 from .profiles import get_profile
-from .validator import has_no_pending_items
 from .utils import extract_title
+from .validator import has_no_pending_items
 
 
 def build_metadata(

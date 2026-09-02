@@ -101,11 +101,11 @@
 
 **Purpose**: Documentar o contrato público, validar o fluxo completo e preservar a qualidade do projeto.
 
-- [ ] T026 [P] Document the meeting-minutes front matter, required fields, `Sem pendências`, and configured letterhead prerequisite in README.md
-- [ ] T027 [P] Add a versioned meeting-minutes example matching the contract, with at least two participants and two pendencies, in examples/meeting-minutes.md
-- [ ] T028 [P] Update release notes and the public version for the completed feature in RELEASES.md pyproject.toml and src/md2tex/__init__.py
-- [ ] T029 Run ruff and the complete pytest suite in pyproject.toml
-- [ ] T030 Execute every scenario in specs/004-update-meeting-minutes/quickstart.md and correct documentation discrepancies in README.md
+- [X] T026 [P] Document the meeting-minutes front matter, required fields, `Sem pendências`, and configured letterhead prerequisite in README.md
+- [X] T027 [P] Add a versioned meeting-minutes example matching the contract, with at least two participants and two pendencies, in examples/meeting-minutes.md
+- [X] T028 [P] Update release notes and the public version for the completed feature in RELEASES.md pyproject.toml and src/md2tex/__init__.py
+- [X] T029 Run ruff and the complete pytest suite in pyproject.toml
+- [X] T030 Execute every scenario in specs/004-update-meeting-minutes/quickstart.md and correct documentation discrepancies in README.md
 
 ---
 

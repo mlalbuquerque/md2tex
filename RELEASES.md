@@ -16,6 +16,9 @@ Este documento registra lançamentos e planejamento segundo [Semantic Versioning
 
 ## 📌 Histórico de Versões Principais
 
+- **v2.5.0** *(Minor Release)*: Adiciona memória de reunião com front matter YAML, validação estrita, participantes e `Sem pendências`.
+
+
 - **v2.4.0** *(Minor Release)*:
   - Adiciona regras YAML independentes de estilo para tópicos obrigatórios por perfil documental.
   - Inclui `md2tex rules init` para criar um modelo comentado e personalizável.

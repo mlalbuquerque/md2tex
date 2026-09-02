@@ -722,3 +722,8 @@ pytest --cov=md2tex --cov-report=term-missing
 ### Licença
 
 Distribuído sob a licença **MIT**. Veja `LICENSE` para mais informações.
+
+
+## Memória de reunião
+
+Use front matter YAML com `client`, `author`, `date`, `period` e participantes. As seções Objetivos, Tópicos, Considerações e Pendências são obrigatórias. Declare `Sem pendências` quando não houver ações e configure o letterhead em `config.yaml`. Veja `examples/meeting-minutes.md`.

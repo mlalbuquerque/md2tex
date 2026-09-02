@@ -17,7 +17,7 @@ def write_valid_config(path: Path) -> Path:
 def test_cli_version_identity():
     result = CliRunner().invoke(main, ["--version"])
     assert result.exit_code == 0
-    assert "md2tex, version 2.4.0" in result.output
+    assert "md2tex, version 2.5.0" in result.output
 
 
 def test_cli_help_identity():
