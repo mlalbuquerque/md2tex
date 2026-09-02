@@ -16,7 +16,11 @@ Este documento registra lançamentos e planejamento segundo [Semantic Versioning
 
 ## 📌 Histórico de Versões Principais
 
-- **v2.5.0** *(Minor Release)*: Adiciona memória de reunião com front matter YAML, validação estrita, participantes e `Sem pendências`.
+- **v2.5.0** *(Minor Release, publicada)*:
+  - Adiciona o perfil `meeting-minutes` com front matter YAML para identificação, período e participantes.
+  - Valida campos e seções obrigatórios; `--strict` bloqueia a saída antes de etapas externas.
+  - Suporta grupos de participantes vazios e a declaração explícita `Sem pendências`.
+  - Inclui exemplo público e documentação do contrato.
 
 
 - **v2.4.0** *(Minor Release)*:
