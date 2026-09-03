@@ -16,6 +16,13 @@ Este documento registra lançamentos e planejamento segundo [Semantic Versioning
 
 ## 📌 Histórico de Versões Principais
 
+- **v2.6.0** *(Minor Release, publicada)*:
+  - Adiciona requisitos de campos e seções configuráveis por tipo documental em config.yaml, com orientações e exemplos copiáveis.
+  - Mantém precedência da CLI, isolamento por perfil e bloqueio seguro em --strict.
+
+- **v2.5.1** *(Patch Release, publicada)*:
+  - Substitui os identificadores internos `period.start` e `period.end` pelos diagnósticos `Período — início` e `Período — fim` na validação de Memória de Reunião.
+
 - **v2.5.0** *(Minor Release, publicada)*:
   - Adiciona o perfil `meeting-minutes` com front matter YAML para identificação, período e participantes.
   - Valida campos e seções obrigatórios; `--strict` bloqueia a saída antes de etapas externas.
