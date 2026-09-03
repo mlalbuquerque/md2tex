@@ -1,6 +1,7 @@
 from importlib.resources import files
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 
 from md2tex.cli import main
@@ -17,7 +18,7 @@ def write_valid_config(path: Path) -> Path:
 def test_cli_version_identity():
     result = CliRunner().invoke(main, ["--version"])
     assert result.exit_code == 0
-    assert "md2tex, version 2.5.0" in result.output
+    assert "md2tex, version 2.6.0" in result.output
 
 
 def test_cli_help_identity():
@@ -291,5 +292,30 @@ def test_cli_strict_reports_invalid_meeting_minutes_and_does_not_create_output(t
     output = tmp_path / "meeting-minutes.tex"
     result = CliRunner().invoke(main, [str(source), "--type", "meeting-minutes", "-c", str(config_file), "-o", str(output), "--strict", "--no-mermaid", "--force"])
     assert result.exit_code == 1
-    assert "client" in result.output
+    assert "Cliente/Projeto" in result.output
+    assert not output.exists()
+
+@pytest.mark.parametrize(
+    ("removed_line", "expected_label"),
+    [
+        ('  start: "09:00"\n', "Período — início"),
+        ('  end: "10:30"\n', "Período — fim"),
+    ],
+)
+def test_cli_strict_uses_public_period_diagnostics(tmp_path: Path, removed_line: str, expected_label: str):
+    source = tmp_path / "invalid-period.md"
+    source.write_text(
+        (MEETING_MINUTES_FIXTURES / "complete.md").read_text(encoding="utf-8").replace(removed_line, ""),
+        encoding="utf-8",
+    )
+    config_file = write_valid_config(tmp_path / "config.yaml")
+    output = tmp_path / "meeting-minutes.tex"
+    result = CliRunner().invoke(
+        main,
+        [str(source), "--type", "meeting-minutes", "-c", str(config_file), "-o", str(output), "--strict", "--no-mermaid", "--force"],
+    )
+    assert result.exit_code == 1
+    assert expected_label in result.output
+    assert "period.start" not in result.output
+    assert "period.end" not in result.output
     assert not output.exists()

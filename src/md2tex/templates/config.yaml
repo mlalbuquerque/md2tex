@@ -73,3 +73,29 @@ tables:
 
 compiler_options:
   engine: xelatex
+
+# Requisitos opcionais por tipo documental. Remova os comentários e adapte-os.
+# document_requirements:
+#   meeting-minutes:
+#     fields:
+#       - path: client
+#         label: Cliente/Projeto
+#         required: true
+#         instruction: Adicione o cliente ou projeto no front matter.
+#         example: 'client: "Cliente / Projeto (NEP-001)"'
+#       - path: period.start
+#         label: Período — início
+#         required: true
+#         instruction: Informe o horário de início dentro de `period`.
+#         example: |
+#           period:
+#             start: "09:00"
+#     sections:
+#       - section: Objetivos da Reunião
+#         label: Objetivos da Reunião
+#         required: true
+#         instruction: Adicione a seção e descreva os objetivos.
+#         example: |
+#           # Objetivos da Reunião
+#
+#           Descreva os objetivos da reunião.

@@ -67,8 +67,8 @@ def test_meeting_minutes_validator_accepts_the_canonical_complete_fixture():
 @pytest.mark.parametrize(
     ("raw", "body", "expected_path"),
     [
-        ({}, "", "client"),
-        ({"client": "Cliente", "author": "Produtor", "date": "2026-08-31", "period": {"start": "09:00"}}, "", "period.end"),
+        ({}, "", "Cliente/Projeto"),
+        ({"client": "Cliente", "author": "Produtor", "date": "2026-08-31", "period": {"start": "09:00"}}, "", "Período — fim"),
         ({"client": "Cliente", "author": "Produtor", "date": "2026-08-31", "period": {"start": "09:00", "end": "10:00"}}, "# Pendências\n\nSem pendências\n", "Objetivos da Reunião"),
     ],
 )
@@ -110,7 +110,7 @@ def test_meeting_minutes_validator_names_invalid_participants_and_pendency_rows(
     assert any(expected_path in message.message for message in _meeting_minutes_messages(raw, body))
 
 def test_meeting_minutes_validator_names_every_required_value():
-    assert all(path in "\n".join(message.message for message in _meeting_minutes_messages({}, "")) for path in ("client", "author", "date", "period.start", "period.end", "Objetivos da Reunião", "Tópicos Abordados", "Considerações Gerais e Definições", "Pendências"))
+    assert all(path in "\n".join(message.message for message in _meeting_minutes_messages({}, "")) for path in ("Cliente/Projeto", "author", "date", "Período — início", "Período — fim", "Objetivos da Reunião", "Tópicos Abordados", "Considerações Gerais e Definições", "Pendências"))
 
 
 
@@ -119,3 +119,77 @@ def test_meeting_minutes_validator_accepts_no_pendency_and_rejects_incomplete_ta
     assert _meeting_minutes_messages(raw, body) == []
     invalid_body = body.replace("Sem pendências", "| Pendência | Responsável | Prazo para Solução |\n|---|---|---|\n| Ação | | 2026-09-01 |")
     assert any("Pendências[1].Responsável" in message.message for message in _meeting_minutes_messages(raw, invalid_body))
+
+@pytest.mark.parametrize(
+    ("period", "expected_label"),
+    [
+        ({"end": "10:00"}, "Período — início"),
+        ({"start": "09:00"}, "Período — fim"),
+        (None, "Período — início"),
+    ],
+)
+def test_meeting_minutes_validator_uses_public_period_labels(period, expected_label):
+    raw = {
+        "client": "Cliente",
+        "author": "Produtor",
+        "date": "2026-08-31",
+    }
+    if period is not None:
+        raw["period"] = period
+    messages = _meeting_minutes_messages(raw, "")
+    rendered = "\n".join(message.message for message in messages)
+    assert expected_label in rendered
+    assert "period.start" not in rendered
+    assert "period.end" not in rendered
+
+
+def test_meeting_minutes_validator_preserves_non_period_diagnostics():
+    rendered = "\n".join(message.message for message in _meeting_minutes_messages({}, ""))
+    assert "Cliente/Projeto" in rendered
+    assert "Objetivos da Reunião" in rendered
+    assert "Período — início" in rendered
+    assert "Período — fim" in rendered
+
+
+def _configured_requirements():
+    from md2tex.models import DocumentRequirement, ProfileRequirements
+
+    return {
+        "meeting-minutes": ProfileRequirements(
+            fields=[
+                DocumentRequirement("client", "Cliente/Projeto", True, "Informe o cliente.", 'client: "Cliente"'),
+                DocumentRequirement("period.start", "Período — início", True, "Informe o início.", 'period:\n  start: "09:00"'),
+                DocumentRequirement("author", "Produtor/a", False, "Informe o produtor.", 'author: "Nome"'),
+            ],
+            sections=[
+                DocumentRequirement("Objetivos da Reunião", "Objetivos", True, "Adicione objetivos.", "# Objetivos da Reunião\n\nDescreva os objetivos."),
+            ],
+        )
+    }
+
+
+def test_configured_requirements_validate_nested_fields_sections_and_optional_items():
+    from md2tex.validator import validate_document_requirements
+
+    messages = validate_document_requirements(
+        _configured_requirements(), "meeting-minutes", {"period": {}}, "# Outro título\n\nTexto"
+    )
+    rendered = "\n".join(message.message for message in messages)
+    assert "Cliente/Projeto" in rendered
+    assert "Período — início" in rendered
+    assert "Objetivos" in rendered
+    assert "Produtor/a" not in rendered
+
+
+def test_configured_requirements_are_isolated_by_profile():
+    from md2tex.validator import validate_document_requirements
+
+    assert validate_document_requirements(_configured_requirements(), "report", {}, "") == []
+
+
+def test_configured_message_includes_instruction_and_multiline_example():
+    from md2tex.validator import validate_document_requirements
+
+    message = validate_document_requirements(_configured_requirements(), "meeting-minutes", {}, "")[0].message
+    assert "Como preencher: Informe o cliente." in message
+    assert 'client: "Cliente"' in message

@@ -9,7 +9,7 @@ from .config import available_style_packages
 from .errors import ConfigError, ValidationError
 from .frontmatter import parse_frontmatter
 from .mermaid import render_mermaid_blocks
-from .metadata import build_metadata
+from .metadata import build_effective_raw_metadata, build_metadata
 from .models import ConversionOptions, ConversionResult, ValidationMessage
 from .pandoc import markdown_to_latex_fragment
 from .profiles import get_profile
@@ -19,6 +19,7 @@ from .utils import ensure_parent, normalize_heading_levels, strip_manual_heading
 from .validator import (
     has_errors,
     missing_required_topics,
+    validate_document_requirements,
     validate_markdown,
     validate_meeting_minutes,
     validate_metadata,
@@ -55,16 +56,17 @@ def convert(options: ConversionOptions) -> ConversionResult:
 
     if options.validate:
         messages.extend(validate_metadata(metadata, options.profile))
+        effective_metadata_raw = build_effective_raw_metadata(raw_metadata, options)
+        profile_requirements = options.user_config.document_requirements.get(options.profile)
+        messages.extend(validate_document_requirements(options.user_config.document_requirements, options.profile, effective_metadata_raw, markdown))
         if options.profile == "meeting-minutes":
-            effective_raw_metadata = dict(raw_metadata)
-            for key, value in (
-                ("client", options.client),
-                ("author", options.author),
-                ("date", options.date),
-            ):
-                if value is not None:
-                    effective_raw_metadata[key] = value
-            messages.extend(validate_meeting_minutes(effective_raw_metadata, markdown))
+            messages.extend(
+                validate_meeting_minutes(
+                    effective_metadata_raw, markdown,
+                    {rule.target for rule in profile_requirements.fields if rule.required} if profile_requirements else set(),
+                    {rule.target.casefold() for rule in profile_requirements.sections if rule.required} if profile_requirements else set(),
+                )
+            )
         messages.extend(validate_markdown(markdown, source_dir))
         for topic in missing_required_topics(headings_markdown, rules.get(options.profile, [])):
             messages.append(
@@ -77,7 +79,7 @@ def convert(options: ConversionOptions) -> ConversionResult:
 
     strict_pendencies = [
         message for message in messages
-        if message.source in {"topics", "meeting-minutes"}
+        if message.source in {"topics", "meeting-minutes", "document-requirements"}
     ]
     if options.strict and strict_pendencies:
         errors = "\n".join(f"- {message.message}" for message in strict_pendencies)

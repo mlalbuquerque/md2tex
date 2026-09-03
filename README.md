@@ -727,3 +727,29 @@ Distribuído sob a licença **MIT**. Veja `LICENSE` para mais informações.
 ## Memória de reunião
 
 Use front matter YAML com `client`, `author`, `date`, `period` e participantes. As seções Objetivos, Tópicos, Considerações e Pendências são obrigatórias. Declare `Sem pendências` quando não houver ações e configure o letterhead em `config.yaml`. Veja `examples/meeting-minutes.md`.
+
+### Requisitos configuráveis por tipo documental
+
+No `config.yaml`, a seção opcional `document_requirements` define campos e seções exigidos para cada tipo. Cada regra inclui o rótulo público, uma orientação e um exemplo copiável. Em caso de ausência, a validação apresenta essas informações; com `--strict`, a saída não é criada nem alterada.
+
+```yaml
+document_requirements:
+  meeting-minutes:
+    fields:
+      - path: client
+        label: Cliente/Projeto
+        required: true
+        instruction: Adicione o cliente ou projeto no front matter.
+        example: 'client: "Cliente / Projeto (NEP-001)"'
+    sections:
+      - section: Objetivos da Reunião
+        label: Objetivos da Reunião
+        required: true
+        instruction: Adicione a seção e descreva os objetivos.
+        example: |
+          # Objetivos da Reunião
+
+          Descreva os objetivos da reunião.
+```
+
+Regras são isoladas pelo valor de `--type`; tipos sem configuração preservam o comportamento atual. Valores equivalentes informados pela CLI continuam prevalecendo sobre o front matter.

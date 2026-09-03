@@ -100,3 +100,56 @@ def test_load_config_rejects_invalid_value_types_and_choices(
     config_file.write_text(content, encoding="utf-8")
     with pytest.raises(ConfigError, match=expected):
         load_config(config_file)
+
+
+def write_config_with_requirements(path: Path, requirements: str) -> Path:
+    config_path = write_valid_config(path)
+    config_path.write_text(
+        config_path.read_text(encoding="utf-8") + "\ndocument_requirements:\n" + requirements,
+        encoding="utf-8",
+    )
+    return config_path
+
+
+def test_load_config_parses_document_requirements(tmp_path: Path):
+    config = load_config(
+        write_config_with_requirements(
+            tmp_path / "config.yaml",
+            """  meeting-minutes:
+    fields:
+      - path: client
+        label: Cliente/Projeto
+        required: true
+        instruction: Informe o cliente.
+        example: 'client: "Cliente"'
+    sections:
+      - section: Objetivos da Reunião
+        label: Objetivos
+        required: false
+        instruction: Adicione os objetivos.
+        example: "# Objetivos da Reunião"
+""",
+        )
+    )
+    profile = config.document_requirements["meeting-minutes"]
+    assert profile.fields[0].target == "client"
+    assert profile.fields[0].label == "Cliente/Projeto"
+    assert profile.sections[0].required is False
+
+
+@pytest.mark.parametrize(
+    ("requirements", "expected"),
+    [
+        ("  unknown:\n    fields: []\n    sections: []\n", "perfil desconhecido"),
+        ("  meeting-minutes:\n    fields: []\n    sections: []\n", ""),
+        ("  meeting-minutes:\n    fields: not-a-list\n    sections: []\n", "fields"),
+        ("  meeting-minutes:\n    fields:\n      - path: client\n        label: Cliente\n        required: true\n        instruction: Informe.\n    sections: []\n", "example"),
+    ],
+)
+def test_document_requirements_schema_is_validated(tmp_path: Path, requirements: str, expected: str):
+    config_path = write_config_with_requirements(tmp_path / "config.yaml", requirements)
+    if not expected:
+        assert load_config(config_path).document_requirements["meeting-minutes"].fields == []
+    else:
+        with pytest.raises(ConfigError, match=expected):
+            load_config(config_path)

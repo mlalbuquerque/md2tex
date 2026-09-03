@@ -78,6 +78,22 @@ def _as_text(value: Any) -> str:
     return str(value)
 
 
+def build_effective_raw_metadata(raw: dict[str, Any], options: ConversionOptions) -> dict[str, Any]:
+    """Aplica ao front matter somente as sobrescritas explícitas da CLI."""
+    effective = dict(raw)
+    overrides = {
+        "title": options.title,
+        "author": options.author,
+        "date": options.date,
+        "version": options.document_version,
+        "client": options.client,
+    }
+    for key, value in overrides.items():
+        if value is not None:
+            effective[key] = value
+    return effective
+
+
 def build_meeting_minutes_data(raw: dict[str, Any], body: str = "") -> MeetingMinutesData:
     """Normaliza período e participantes sem ocultar erros do validador."""
     period = raw.get("period")

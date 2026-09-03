@@ -9,7 +9,8 @@ from typing import Any
 import yaml
 
 from md2tex.errors import ConfigError
-from md2tex.models import UserConfig
+from md2tex.models import DocumentRequirement, ProfileRequirements, UserConfig
+from md2tex.profiles import PROFILES
 
 DEFAULT_CONFIG_PATH = Path.home() / ".config" / "md2tex" / "config.yaml"
 REQUIRED_KEYS = {
@@ -22,6 +23,7 @@ REQUIRED_KEYS = {
     "compiler_options",
     "tables",
 }
+OPTIONAL_KEYS = {"document_requirements"}
 TYPOGRAPHY_KEYS = {"language", "fontsize", "mainfont", "line_spacing"}
 TABLE_KEYS = {"landscape", "font", "width", "borders", "zebra"}
 TABLE_CHOICES = {
@@ -30,6 +32,7 @@ TABLE_CHOICES = {
     "width": {"auto", "equal", "natural"},
     "borders": {"none", "outer", "grid"},
 }
+OPTIONAL_KEYS = {"document_requirements"}
 ENGINES = {"pdflatex", "xelatex", "lualatex"}
 PACKAGE_IMPORT_RE = re.compile(r"\\(?:RequirePackage|usepackage)(?:\[([^]]*)\])?\{([^}]+)\}")
 
@@ -62,6 +65,72 @@ def _require_string_map(path: Path, data: dict[str, Any], key: str) -> dict[str,
     return value
 
 
+def _parse_document_requirements(path: Path, value: Any) -> dict[str, ProfileRequirements]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise _config_error(path, "'document_requirements' deve ser um mapa de perfis.")
+
+    parsed: dict[str, ProfileRequirements] = {}
+    for profile, profile_value in value.items():
+        profile_path = f"document_requirements.{profile}"
+        if not isinstance(profile, str) or profile not in PROFILES:
+            raise _config_error(path, f"perfil desconhecido em document_requirements: {profile!r}.")
+        if not isinstance(profile_value, dict) or set(profile_value) != {"fields", "sections"}:
+            raise _config_error(path, f"'{profile_path}' deve conter somente fields e sections.")
+        fields = _parse_requirement_list(path, profile_path, "fields", profile_value["fields"])
+        sections = _parse_requirement_list(path, profile_path, "sections", profile_value["sections"])
+        parsed[profile] = ProfileRequirements(fields=fields, sections=sections)
+    return parsed
+
+
+def _parse_requirement_list(
+    path: Path, profile_path: str, kind: str, value: Any
+) -> list[DocumentRequirement]:
+    entry_path = f"{profile_path}.{kind}"
+    if not isinstance(value, list):
+        raise _config_error(path, f"'{entry_path}' deve ser uma lista.")
+
+    target_key = "path" if kind == "fields" else "section"
+    expected_keys = {target_key, "label", "required", "instruction", "example"}
+    parsed: list[DocumentRequirement] = []
+    seen: set[str] = set()
+    for index, item in enumerate(value):
+        item_path = f"{entry_path}[{index}]"
+        if not isinstance(item, dict) or set(item) != expected_keys:
+            raise _config_error(
+                path,
+                f"'{item_path}' deve conter somente " + ", ".join(sorted(expected_keys)) + ".",
+            )
+        text_values: dict[str, str] = {}
+        for key in (target_key, "label", "instruction", "example"):
+            raw_value = item[key]
+            if not isinstance(raw_value, str) or not raw_value.strip():
+                raise _config_error(path, f"'{item_path}.{key}' deve ser uma string não vazia.")
+            text_values[key] = raw_value.strip()
+        if kind == "fields" and any(not part.strip() for part in text_values[target_key].split(".")):
+            raise _config_error(
+                path,
+                f"'{item_path}.{target_key}' deve ser um caminho pontuado sem segmentos vazios.",
+            )
+        if not isinstance(item["required"], bool):
+            raise _config_error(path, f"'{item_path}.required' deve ser true ou false.")
+        normalized = text_values[target_key].casefold() if kind == "sections" else text_values[target_key]
+        if normalized in seen:
+            raise _config_error(path, f"'{entry_path}' contém requisito duplicado: {text_values[target_key]!r}.")
+        seen.add(normalized)
+        parsed.append(
+            DocumentRequirement(
+                target=text_values[target_key],
+                label=text_values["label"],
+                required=item["required"],
+                instruction=text_values["instruction"],
+                example=text_values["example"],
+            )
+        )
+    return parsed
+
+
 def load_config(config_path: Path | None = None) -> UserConfig:
     """Carrega e valida a configuração explícita do usuário."""
     resolved_path = config_path.expanduser().resolve() if config_path else DEFAULT_CONFIG_PATH
@@ -81,12 +150,16 @@ def load_config(config_path: Path | None = None) -> UserConfig:
 
     if not isinstance(data, dict):
         raise _config_error(resolved_path, "o conteúdo deve ser um mapa YAML.")
-    unknown = set(data) - REQUIRED_KEYS
+    unknown = set(data) - REQUIRED_KEYS - OPTIONAL_KEYS
     missing = REQUIRED_KEYS - set(data)
     if unknown:
         raise _config_error(resolved_path, "chave(s) desconhecida(s): " + ", ".join(sorted(unknown)) + ".")
     if missing:
         raise _config_error(resolved_path, "chave(s) obrigatória(s) ausente(s): " + ", ".join(sorted(missing)) + ".")
+
+    document_requirements = _parse_document_requirements(
+        resolved_path, data.get("document_requirements")
+    )
 
     typography = _require_string_map(resolved_path, data, "typography")
     typography_unknown = set(typography) - TYPOGRAPHY_KEYS
@@ -117,6 +190,7 @@ def load_config(config_path: Path | None = None) -> UserConfig:
         preamble_includes=_require_string_list(resolved_path, data, "preamble_includes"),
         compiler_options=compiler_options,
         tables=tables,
+        document_requirements=document_requirements,
     )
     validate_style_paths(user_config.style_packages, base_dir=resolved_path.parent)
     validate_style_configuration(user_config, base_dir=resolved_path.parent)

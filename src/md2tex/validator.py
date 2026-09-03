@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from .models import DocumentMetadata, ValidationMessage
+from .models import DocumentMetadata, ProfileRequirements, ValidationMessage
 
 PLACEHOLDER_RE = re.compile(r"@@PH\d+@@")
 IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)(?:\s+[^)]*)?\)")
@@ -48,6 +48,45 @@ def missing_required_topics(markdown: str, required_topics: list[str]) -> list[s
     """Preserva o texto configurado para cada tópico obrigatório ausente."""
     headings = extract_headings(markdown)
     return [topic for topic in required_topics if topic.strip().casefold() not in headings]
+
+
+def validate_document_requirements(
+    requirements: dict[str, ProfileRequirements], profile: str, raw: dict[str, Any], body: str
+) -> list[ValidationMessage]:
+    configured = requirements.get(profile)
+    if configured is None:
+        return []
+    messages: list[ValidationMessage] = []
+    for requirement in configured.fields:
+        if requirement.required and not _non_empty_text(_nested_value(raw, requirement.target)):
+            messages.append(_configured_message(requirement.label, requirement.instruction, requirement.example))
+    sections = _meeting_sections(body)
+    headings = extract_headings(body)
+    for requirement in configured.sections:
+        target = requirement.target.casefold()
+        if requirement.required and (
+            target not in headings
+            or (target in sections and not sections[target].strip())
+        ):
+            messages.append(_configured_message(requirement.label, requirement.instruction, requirement.example))
+    return messages
+
+
+def _nested_value(data: dict[str, Any], path: str) -> Any:
+    value: Any = data
+    for part in path.split("."):
+        if not isinstance(value, dict):
+            return None
+        value = value.get(part)
+    return value
+
+
+def _configured_message(label: str, instruction: str, example: str) -> ValidationMessage:
+    return ValidationMessage(
+        "warning",
+        f"Campo ou seção obrigatório ausente: {label}.\nComo preencher: {instruction}\nExemplo:\n{example}",
+        "document-requirements",
+    )
 
 
 def validate_markdown(markdown: str, source_dir: Path) -> list[ValidationMessage]:
@@ -100,13 +139,23 @@ MEETING_MINUTES_SECTIONS = (
     "Pendências",
 )
 PENDENCY_COLUMNS = ("Pendência", "Responsável", "Prazo para Solução")
+PERIOD_DIAGNOSTIC_LABELS = {
+    "client": "Cliente/Projeto",
+    "period.start": "Período — início",
+    "period.end": "Período — fim",
+}
 
 
-def validate_meeting_minutes(raw: dict[str, Any], body: str) -> list[ValidationMessage]:
+def validate_meeting_minutes(
+    raw: dict[str, Any], body: str, configured_targets: set[str] | None = None,
+    configured_sections: set[str] | None = None,
+) -> list[ValidationMessage]:
     """Valida o contrato de entrada do perfil ``meeting-minutes``."""
     messages: list[ValidationMessage] = []
+    configured_targets = configured_targets or set()
+    configured_sections = configured_sections or set()
     for field in ("client", "author", "date"):
-        if not _non_empty_text(raw.get(field)):
+        if field not in configured_targets and not _non_empty_text(raw.get(field)):
             messages.append(_meeting_message(field))
 
     period = raw.get("period")
@@ -114,13 +163,16 @@ def validate_meeting_minutes(raw: dict[str, Any], body: str) -> list[ValidationM
         messages.extend([_meeting_message("period.start"), _meeting_message("period.end")])
     else:
         for field in ("start", "end"):
-            if not _non_empty_text(period.get(field)):
+            if f"period.{field}" not in configured_targets and not _non_empty_text(period.get(field)):
                 messages.append(_meeting_message(f"period.{field}"))
 
     messages.extend(_validate_participants(raw.get("participants")))
     sections = _meeting_sections(body)
     for section in MEETING_MINUTES_SECTIONS:
-        if not sections.get(section.casefold(), "").strip():
+        if (
+            section.casefold() not in configured_sections
+            and not sections.get(section.casefold(), "").strip()
+        ):
             messages.append(_meeting_message(section))
 
     pending_content = sections.get("pendências", "")
@@ -197,7 +249,7 @@ def _non_empty_text(value: Any) -> bool:
 
 
 def _meeting_message(path: str) -> ValidationMessage:
-    return ValidationMessage("warning", f"Memória de reunião: campo ou seção inválida: {path}.", "meeting-minutes")
+    return ValidationMessage("warning", f"Memória de reunião: campo ou seção inválida: {PERIOD_DIAGNOSTIC_LABELS.get(path, path)}.", "meeting-minutes")
 
 
 def validate_tex(tex: str) -> list[ValidationMessage]:

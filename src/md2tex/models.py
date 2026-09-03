@@ -6,6 +6,25 @@ from typing import Any
 
 
 @dataclass(slots=True)
+class DocumentRequirement:
+    """Regra declarativa e orientada para um campo ou seção documental."""
+
+    target: str
+    label: str
+    required: bool
+    instruction: str
+    example: str
+
+
+@dataclass(slots=True)
+class ProfileRequirements:
+    """Requisitos configuráveis de um perfil documental."""
+
+    fields: list[DocumentRequirement] = field(default_factory=list)
+    sections: list[DocumentRequirement] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class UserConfig:
     """Configuração explícita do usuário, sem valores de estilo implícitos."""
 
@@ -17,6 +36,7 @@ class UserConfig:
     preamble_includes: list[str]
     compiler_options: dict[str, str]
     tables: dict[str, str | bool]
+    document_requirements: dict[str, ProfileRequirements] = field(default_factory=dict)
 
 
 @dataclass(slots=True)

@@ -329,7 +329,7 @@ def test_strict_invalid_meeting_minutes_stops_before_external_work(tmp_path: Pat
     if existing: output.write_bytes(expected)
     monkeypatch.setattr("md2tex.converter.render_mermaid_blocks", lambda *args, **kwargs: pytest.fail("Mermaid não deve executar"))
     monkeypatch.setattr("md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: pytest.fail("Pandoc não deve executar"))
-    with pytest.raises(ValidationError, match="client"):
+    with pytest.raises(ValidationError, match="Cliente/Projeto"):
         convert(ConversionOptions(input_path=source, output_path=output, user_config=config_for(tmp_path), profile="meeting-minutes", strict=True, force=True))
     if existing:
         assert output.read_bytes() == expected
@@ -347,3 +347,30 @@ def test_no_pendency_meeting_minutes_renders_declaration_without_empty_groups(tm
     content = output.read_text(encoding="utf-8")
     assert "Sem pendências" in content
     assert "Participantes do Cliente" not in content and "Participantes da Netra" not in content
+
+
+def test_configured_requirements_apply_only_to_selected_profile(tmp_path: Path, monkeypatch):
+    source = tmp_path / "meeting.md"
+    source.write_text("---\ntitle: Reunião\n---\n\n# Corpo\n", encoding="utf-8")
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        files("md2tex").joinpath("templates", "config.yaml").read_text(encoding="utf-8")
+        + """
+document_requirements:
+  meeting-minutes:
+    fields:
+      - path: client
+        label: Cliente/Projeto
+        required: true
+        instruction: Informe o cliente.
+        example: 'client: "Cliente"'
+    sections: []
+""",
+        encoding="utf-8",
+    )
+    config = load_config(config_path)
+    monkeypatch.setattr("md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: "Corpo")
+    report_output = tmp_path / "report.tex"
+    convert(ConversionOptions(input_path=source, output_path=report_output, user_config=config, profile="report", mermaid=False, force=True))
+    with pytest.raises(ValidationError, match="Cliente/Projeto"):
+        convert(ConversionOptions(input_path=source, output_path=tmp_path / "meeting.tex", user_config=config, profile="meeting-minutes", strict=True, mermaid=False, force=True))
