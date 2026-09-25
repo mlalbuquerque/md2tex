@@ -12,9 +12,9 @@ A ferramenta usa o Pandoc para interpretar o Markdown como uma estrutura semânt
 - **Configuração do Usuário**: Leitura de pacotes `.sty`, classes de documento e geometrias em `~/.config/md2tex/config.yaml`.
 - **Precedência de CLI**: Sobrescrita de configurações via flags CLI (`--config`, `--style`, `--engine`).
 - **Saídas Flexíveis**: Geração de código TEX e, opcionalmente, compilação de PDF.
-- **Perfis Documentais**: Suporte nativo a relatórios (`report`), memórias de reunião (`meeting-minutes`), ADRs (`adr`) e planos técnicos (`technical-plan`).
+- **Perfis Documentais**: Suporte nativo a relatórios (`report`), memórias de reunião (`meeting-minutes`), ADRs (`adr`) , planos técnicos (`technical-plan`) e documentos de arquitetura (`software-architecture`).
 - **Estilo Customizado**: Suporte ao carregamento de pacotes `.sty` via arquivo de configuração ou flag CLI.
-- **Metadados YAML**: Configuração de capa, título, versão, cliente, data, status e autor via Front Matter ou CLI.
+- **Metadados YAML**: Configuração de capa, título, versão, sistema, cliente, data, status e autor via Front Matter ou CLI.
 - **Normalização de Títulos**: Remoção automática de numeração manual em títulos Markdown, delegando a numeração ao LaTeX.
 - **Formatação Inline Inteligente**:
   - Negrito, itálico, código inline e tachado (inclusive aninhados).
@@ -364,6 +364,10 @@ A ferramenta possui 4 perfis pré-configurados que utilizam templates específic
    ```bash
    md2tex plano.md --type technical-plan
    ```
+5. **Documento de Arquitetura de Software (`software-architecture`)**:
+   ```bash
+   md2tex arquitetura.md --type software-architecture --system-name "Sistema Aurora"
+   ```
 
 ### Regras de tópicos obrigatórios
 
@@ -412,8 +416,16 @@ client: Projeto Exemplo
 document-type: Relatório Técnico
 subtitle: Subtítulo do Documento
 status: Em revisão
+system-name: Sistema Exemplo
+revision-history:
+  - date: 2026-07-30
+    version: "1.0"
+    description: Criação do documento
+    author: Autor
 ---
 ```
+
+No perfil `default`, `system-name` é opcional e também pode ser informado com `--system-name`; quando presente, aparece no alto à direita da capa. A página **Histórico de Revisões** é sempre gerada antes do sumário. Se `revision-history` não for informado, a tabela recebe uma linha inicial com data, versão e autor dos metadados, deixando a descrição em branco.
 
 ### Precedência de Metadados
 
@@ -435,7 +447,8 @@ md2tex documento.md \
   --author "Sua Empresa" \
   --date 2026-07-30 \
   --document-version "1.1" \
-  --client "Cliente X"
+  --client "Cliente X" \
+  --system-name "Sistema Exemplo"
 ```
 
 ---
@@ -627,7 +640,7 @@ Usage: md2tex [OPTIONS] INPUT_FILE
 Options:
   -o, --output FILE                  Caminho do arquivo TEX de saída.
   --rules FILE                       Caminho do YAML de regras de tópicos.
-  --type [report|meeting-minutes|adr|technical-plan]
+  --type [report|meeting-minutes|adr|technical-plan|software-architecture|default]
                                      Perfil documental a ser utilizado.
   --title TEXT                       Título do documento.
   --subtitle TEXT                    Subtítulo do documento.
@@ -635,6 +648,7 @@ Options:
   --date TEXT                        Data do documento.
   --document-version TEXT            Versão do documento.
   --client TEXT                      Nome do cliente.
+  --system-name TEXT                 Nome opcional do sistema exibido na capa do Documento de Arquitetura de Software.
   --style TEXT                  Caminho para o pacote de estilo (.sty).
   --figures DIRECTORY                Diretório de saída para imagens e diagramas.
   --template FILE                    Template Jinja2 customizado (.tex.j2).

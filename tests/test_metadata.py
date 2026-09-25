@@ -55,6 +55,54 @@ def test_subtitle_preserves_surrounding_whitespace(
     assert metadata.subtitle == expected
 
 
+def test_software_architecture_metadata_normalizes_optional_system_name_and_revision_history():
+    metadata, _ = build_metadata(
+        {
+            "system-name": "Sistema Aurora",
+            "revision-history": [
+                {
+                    "date": "2026-09-01",
+                    "version": "1.1",
+                    "description": "Atualização da arquitetura",
+                    "author": "Ana Silva",
+                }
+            ],
+        },
+        "# Documento\n",
+        ConversionOptions(
+            input_path=Path("documento.md"),
+            output_path=Path("documento.tex"),
+            profile="software-architecture",
+        ),
+    )
+
+    assert metadata.system_name == "Sistema Aurora"
+    assert len(metadata.revision_history) == 1
+    assert metadata.revision_history[0].date == "2026-09-01"
+    assert metadata.revision_history[0].version == "1.1"
+    assert metadata.revision_history[0].description == "Atualização da arquitetura"
+    assert metadata.revision_history[0].author == "Ana Silva"
+
+
+def test_software_architecture_metadata_has_empty_system_name_and_initial_revision_when_omitted():
+    metadata, _ = build_metadata(
+        {"date": "2026-09-01", "version": "2.0", "author": "Ana Silva"},
+        "# Documento\n",
+        ConversionOptions(
+            input_path=Path("documento.md"),
+            output_path=Path("documento.tex"),
+            profile="software-architecture",
+        ),
+    )
+
+    assert metadata.system_name == ""
+    assert len(metadata.revision_history) == 1
+    assert metadata.revision_history[0].date == "2026-09-01"
+    assert metadata.revision_history[0].version == "2.0"
+    assert metadata.revision_history[0].description == ""
+    assert metadata.revision_history[0].author == "Ana Silva"
+
+
 @pytest.mark.parametrize(
     "template_name",
     [

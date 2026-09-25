@@ -17,6 +17,81 @@ def config_for(tmp_path: Path):
     path.write_text(files("md2tex").joinpath("templates", "config.yaml").read_text(encoding="utf-8"), encoding="utf-8")
     return load_config(path)
 
+
+def test_software_architecture_template_places_optional_system_name_and_revision_page_before_toc(
+    tmp_path: Path, monkeypatch
+):
+    source = tmp_path / "architecture.md"
+    source.write_text(
+        """---
+title: Arquitetura Aurora
+date: 2026-09-01
+version: "1.1"
+author: Ana Silva
+system-name: Sistema Aurora
+revision-history:
+  - date: 2026-08-20
+    version: "1.0"
+    description: Criação do documento
+    author: Bruno Souza
+  - date: 2026-09-01
+    version: "1.1"
+    description: Atualização da arquitetura
+    author: Ana Silva
+---
+
+Conteúdo.
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: "Conteúdo")
+    output = tmp_path / "architecture.tex"
+
+    convert(
+        ConversionOptions(
+            input_path=source,
+            output_path=output,
+            user_config=config_for(tmp_path),
+            profile="software-architecture",
+            mermaid=False,
+            force=True,
+        )
+    )
+
+    content = output.read_text(encoding="utf-8")
+    system_name = r"\makebox[\textwidth][r]{\normalsize Sistema Aurora\par}"
+    assert system_name in content
+    assert content.index("Histórico de Revisões") < content.rindex("\\mdtexTableOfContents")
+    assert "Criação do documento & Bruno Souza" in content
+    assert "Atualização da arquitetura & Ana Silva" in content
+
+
+def test_software_architecture_template_keeps_system_name_blank_and_generates_revision_page(
+    tmp_path: Path, monkeypatch
+):
+    source = tmp_path / "architecture.md"
+    source.write_text("---\ntitle: Arquitetura\n---\n\nConteúdo.\n", encoding="utf-8")
+    monkeypatch.setattr("md2tex.converter.markdown_to_latex_fragment", lambda *args, **kwargs: "Conteúdo")
+    output = tmp_path / "architecture.tex"
+
+    convert(
+        ConversionOptions(
+            input_path=source,
+            output_path=output,
+            user_config=config_for(tmp_path),
+            profile="software-architecture",
+            mermaid=False,
+            toc=False,
+            force=True,
+        )
+    )
+
+    content = output.read_text(encoding="utf-8")
+    assert "Sistema Aurora" not in content
+    assert "Histórico de Revisões" in content
+    assert content.count("\\mdtexTableOfContents") == 1  # definição no preâmbulo, sem chamada
+    assert r"\textbf{Data} & \textbf{Versão} & \textbf{Descrição} & \textbf{Autor}" in content
+
 def test_complete_meeting_minutes_renders_identification_participants_and_pendencies(
     tmp_path: Path, monkeypatch
 ):

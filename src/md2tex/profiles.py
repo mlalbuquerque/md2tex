@@ -21,6 +21,10 @@ PROFILES = {
         "label": "Plano Técnico",
         "template": "technical-plan.tex.j2",
     },
+    "software-architecture": {
+        "label": "Documento de Arquitetura de Software",
+        "template": "software-architecture.tex.j2",
+    },
 }
 
 

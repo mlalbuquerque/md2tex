@@ -33,7 +33,7 @@ from .setup import print_dependency_report, run_interactive_setup
 @click.option(
     "--type",
     "profile",
-    type=click.Choice(["report", "meeting-minutes", "adr", "technical-plan", "default"]),
+    type=click.Choice(["report", "meeting-minutes", "adr", "technical-plan", "software-architecture", "default"]),
     default="default",
     show_default=True,
     help="Perfil documental aplicado ao documento.",
@@ -44,6 +44,7 @@ from .setup import print_dependency_report, run_interactive_setup
 @click.option("--date", help="Sobrescreve a data do documento.")
 @click.option("--document-version", help="Sobrescreve a versão documental.")
 @click.option("--client", help="Sobrescreve o cliente/projeto.")
+@click.option("--system-name", help="Nome opcional do sistema exibido na capa do Documento de Arquitetura de Software.")
 @click.option(
     "--figures",
     "figures_dir",
@@ -121,6 +122,7 @@ def main(
     date: str | None,
     document_version: str | None,
     client: str | None,
+    system_name: str | None,
     figures_dir: Path,
     template_path: Path | None,
     generate_pdf: bool,
@@ -235,6 +237,7 @@ def main(
         date=date,
         document_version=document_version,
         client=client,
+        system_name=system_name,
         shell_escape=shell_escape,
         clean=clean,
         clean_all=clean_all,

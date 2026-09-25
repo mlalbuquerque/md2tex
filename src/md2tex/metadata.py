@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from .models import ConversionOptions, DocumentMetadata, MeetingMinutesData, Participant
+from .models import ConversionOptions, DocumentMetadata, MeetingMinutesData, Participant, RevisionEntry
 from .profiles import get_profile
 from .utils import extract_title
 from .validator import has_no_pending_items
@@ -36,6 +36,15 @@ def build_metadata(
     subtitle = subtitle_source if subtitle_source.strip() else ""
     status = _as_text(raw.get("status")) or ""
     document_type = _as_text(raw.get("document-type")) or profile["label"]
+    if options.profile == "software-architecture":
+        system_name_raw = options.system_name if options.system_name is not None else _as_text(raw.get("system-name"))
+        system_name = system_name_raw.strip()
+        revisions = _normalize_revision_history(raw.get("revision-history"))
+        if not revisions:
+            revisions = [RevisionEntry(date=document_date, version=version, author=author)]
+    else:
+        system_name = ""
+        revisions = []
 
     known = {
         "title",
@@ -47,6 +56,8 @@ def build_metadata(
         "subtitle",
         "status",
         "document-type",
+        "system-name",
+        "revision-history",
     }
     extra = {key: value for key, value in raw.items() if key not in known}
     meeting_minutes = (
@@ -63,6 +74,8 @@ def build_metadata(
             document_type=document_type,
             subtitle=subtitle,
             status=status,
+            system_name=system_name,
+            revision_history=revisions,
             extra=extra,
             meeting_minutes=meeting_minutes,
         ),
@@ -87,11 +100,28 @@ def build_effective_raw_metadata(raw: dict[str, Any], options: ConversionOptions
         "date": options.date,
         "version": options.document_version,
         "client": options.client,
+        "system-name": options.system_name,
     }
     for key, value in overrides.items():
         if value is not None:
             effective[key] = value
     return effective
+
+
+def _normalize_revision_history(value: Any) -> list[RevisionEntry]:
+    if not isinstance(value, list):
+        return []
+    entries: list[RevisionEntry] = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        entries.append(RevisionEntry(
+            date=_as_text(item.get("date")).strip(),
+            version=_as_text(item.get("version")).strip(),
+            description=_as_text(item.get("description")).strip(),
+            author=_as_text(item.get("author")).strip(),
+        ))
+    return entries
 
 
 def build_meeting_minutes_data(raw: dict[str, Any], body: str = "") -> MeetingMinutesData:

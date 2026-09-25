@@ -49,8 +49,18 @@ class DocumentMetadata:
     document_type: str = "Documento"
     subtitle: str = ""
     status: str = ""
+    system_name: str = ""
+    revision_history: list[RevisionEntry] = field(default_factory=list)
     extra: dict[str, Any] = field(default_factory=dict)
     meeting_minutes: MeetingMinutesData | None = None
+
+
+@dataclass(slots=True)
+class RevisionEntry:
+    date: str = ""
+    version: str = ""
+    description: str = ""
+    author: str = ""
 
 
 @dataclass(slots=True)
@@ -104,6 +114,7 @@ class ConversionOptions:
     date: str | None = None
     document_version: str | None = None
     client: str | None = None
+    system_name: str | None = None
     shell_escape: bool = False
     clean: bool = False
     clean_all: bool = False

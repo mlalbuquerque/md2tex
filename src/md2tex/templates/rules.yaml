@@ -19,3 +19,6 @@ rules: {}
 #   technical-plan:
 #     - Objetivo
 #     - Plano de implementação
+#   software-architecture:
+#     - Objetivo
+#     - Visão Geral do Sistema

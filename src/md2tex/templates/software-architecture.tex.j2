@@ -29,6 +29,10 @@
 \begin{titlepage}
   \centering
   \vspace*{1.8cm}
+  ((% if metadata.system_name %))
+  \noindent\makebox[\textwidth][r]{\normalsize ((* metadata.system_name|latex *))\par}
+  \vspace{0.6cm}
+  ((% endif %))
   {\LARGE\bfseries ((* metadata.title|latex *))\par}
   ((% if metadata.subtitle %))
   \vspace{0.4cm}
@@ -49,6 +53,17 @@
   \vspace*{1.2cm}
 \end{titlepage}
 
+\clearpage
+\section*{Histórico de Revisões}
+\begin{center}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{0.16\textwidth}p{0.12\textwidth}p{0.40\textwidth}p{0.22\textwidth}@{}}
+\textbf{Data} & \textbf{Versão} & \textbf{Descrição} & \textbf{Autor} \\
+\hline
+((% for revision in metadata.revision_history %))
+((* revision.date|latex *)) & ((* revision.version|latex *)) & ((* revision.description|latex *)) & ((* revision.author|latex *)) \\
+((% endfor %))
+\end{tabular*}
+\end{center}
 \clearpage
 
 ((% if toc %))
