@@ -2,7 +2,6 @@ name: CI/CD Pipeline & Cross-Platform Release Build
 
 on:
   push:
-    branches: [ main, master, "001-*" ]
     tags: [ "v*" ]
   pull_request:
     branches: [ main, master ]
