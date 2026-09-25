@@ -16,6 +16,16 @@ Este documento registra lançamentos e planejamento segundo [Semantic Versioning
 
 ## 📌 Histórico de Versões Principais
 
+- **v2.7.1** *(Patch Release, publicada)*:
+  - Corrige leitura da versão do CLI nos testes automatizados, utilizando importação dinâmica para evitar quebras nos *bumps* de versão.
+  - Ajusta a configuração de CI/CD do GitHub Actions para rodar a pipeline apenas na criação de *tags*, evitando execuções duplicadas ao enviar a branch `main` e a tag simultaneamente.
+
+- **v2.7.0** *(Minor Release, publicada)*:
+  - Adiciona o perfil `software-architecture` (Documento de Arquitetura de Software).
+  - Inclui template dedicado, metadado de nome do sistema e geração automática de página de Histórico de Revisões na capa do documento.
+  - Isola as customizações para garantir que não alterem o comportamento do perfil `default`.
+  - Atualiza as regras de tópicos (`rules.yaml`) e adiciona exemplos completos de uso.
+
 - **v2.6.0** *(Minor Release, publicada)*:
   - Adiciona requisitos de campos e seções configuráveis por tipo documental em config.yaml, com orientações e exemplos copiáveis.
   - Mantém precedência da CLI, isolamento por perfil e bloqueio seguro em --strict.
