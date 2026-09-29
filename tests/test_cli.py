@@ -340,3 +340,51 @@ def test_cli_strict_uses_public_period_diagnostics(tmp_path: Path, removed_line:
     assert "period.start" not in result.output
     assert "period.end" not in result.output
     assert not output.exists()
+import pytest
+
+def test_cli_rejects_mutually_exclusive_type_and_template(tmp_path: Path):
+    from click.testing import CliRunner
+    from md2tex.cli import main
+    
+    doc = tmp_path / "input.md"
+    doc.write_text("# Documento\n", encoding="utf-8")
+    config_file = write_valid_config(tmp_path / "config.yaml")
+    template = tmp_path / "template.tex.j2"
+    template.write_text("template", encoding="utf-8")
+    
+    result = CliRunner().invoke(main, [
+        str(doc),
+        "-c", str(config_file),
+        "--type", "report",
+        "--template", str(template)
+    ])
+    assert result.exit_code != 0
+    assert "--template e --type são mutuamente exclusivos" in result.output
+
+def test_cli_accepts_custom_cover(tmp_path: Path, monkeypatch):
+    from click.testing import CliRunner
+    from md2tex.cli import main
+    from md2tex.models import ConversionResult
+    
+    doc = tmp_path / "input.md"
+    doc.write_text("# Documento\n", encoding="utf-8")
+    config_file = write_valid_config(tmp_path / "config.yaml")
+    
+    cover = tmp_path / "cover.tex.j2"
+    cover.write_text("Capa Personalizada\n", encoding="utf-8")
+    
+    captured = {}
+    def fake_convert(options):
+        captured["cover_path"] = options.cover_path
+        return ConversionResult(tex_path=options.output_path, pdf_path=None, messages=[])
+        
+    monkeypatch.setattr("md2tex.cli.convert", fake_convert)
+    
+    result = CliRunner().invoke(main, [
+        str(doc),
+        "-c", str(config_file),
+        "--cover", str(cover)
+    ])
+    
+    assert result.exit_code == 0
+    assert captured["cover_path"] == cover.resolve()

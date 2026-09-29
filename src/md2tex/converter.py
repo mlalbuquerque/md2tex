@@ -141,17 +141,21 @@ def convert(options: ConversionOptions) -> ConversionResult:
             + ". Adicione-os a style_packages, a menos que um .sty local os carregue."
         )
 
-    tex = render_template(
-        Path(template_path),
-        metadata=metadata,
-        body=fragment,
-        user_config=options.user_config,
-        toc=options.toc,
-        engine=options.engine,
-        used_svg=mermaid_result.used_svg,
-        source_dir=source_dir,
-        meeting_minutes=metadata.meeting_minutes,
-    )
+    try:
+        tex = render_template(
+            Path(template_path),
+            metadata=metadata,
+            body=fragment,
+            user_config=options.user_config,
+            toc=options.toc,
+            engine=options.engine,
+            used_svg=mermaid_result.used_svg,
+            source_dir=source_dir,
+            meeting_minutes=metadata.meeting_minutes,
+            cover_path=options.cover_path,
+        )
+    except ValueError as exc:
+        raise ValidationError(str(exc)) from exc
 
     if options.validate:
         messages.extend(validate_tex(tex))

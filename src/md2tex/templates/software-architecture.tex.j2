@@ -26,6 +26,9 @@
 
 \begin{document}
 
+((% if custom_cover %))
+((* custom_cover *))
+((% else %))
 \begin{titlepage}
   \centering
   \vspace*{1.8cm}
@@ -52,6 +55,7 @@
   {\normalsize Data: ((* metadata.date|latex *))\par}
   \vspace*{1.2cm}
 \end{titlepage}
+((% endif %))
 
 \clearpage
 \section*{Histórico de Revisões}

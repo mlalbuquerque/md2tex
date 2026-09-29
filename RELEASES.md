@@ -16,6 +16,11 @@ Este documento registra lançamentos e planejamento segundo [Semantic Versioning
 
 ## 📌 Histórico de Versões Principais
 
+- **v2.8.0** *(Minor Release, pendente)*:
+  - Adiciona suporte a capas customizadas via flag `--cover FILE`.
+  - A capa customizada é renderizada como template Jinja2, tem prioridade sobre templates padrão ou perfis de documento (`--type`), garantindo extrema flexibilidade.
+  - Implementa validação de exclusividade mútua entre as flags `--type` e `--template`, prevenindo inconsistências de configuração e comportamento ambíguo.
+
 - **v2.7.1** *(Patch Release, publicada)*:
   - Corrige leitura da versão do CLI nos testes automatizados, utilizando importação dinâmica para evitar quebras nos *bumps* de versão.
   - Ajusta a configuração de CI/CD do GitHub Actions para rodar a pipeline apenas na criação de *tags*, evitando execuções duplicadas ao enviar a branch `main` e a tag simultaneamente.

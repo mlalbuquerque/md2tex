@@ -93,6 +93,7 @@ class ConversionOptions:
     profile: str = "default"
     figures_dir: Path = Path("figures")
     template_path: Path | None = None
+    cover_path: Path | None = None
     generate_pdf: bool = False
     validate: bool = True
     strict: bool = False

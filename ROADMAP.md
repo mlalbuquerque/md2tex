@@ -4,11 +4,11 @@ Planejamento futuro do projeto. As versões já publicadas estão em [RELEASES.m
 
 ## 🚀 Versões Futuras Planejadas
 
-### v2.8.0 — Múltiplos Formatos de Saída
+### v2.9.0 — Múltiplos Formatos de Saída
 - [ ] Suporte a múltiplos formatos de saída via opção `--to pdf|html|epub|docx|odt`.
 - [ ] Descontinuação e remoção da opção `--pdf` (o comportamento passa a ser coberto por `--to pdf`).
 
-### v2.9.0 — Imagens e Cache Inteligente
+### v2.10.0 — Imagens e Cache Inteligente
 - [ ] Implementação de cache inteligente para os diagramas gerados pelo Mermaid.
 - [ ] Suporte aprimorado para marcação de imagens no Markdown: ao passar o caminho da imagem, ela será automaticamente ajustada à página.
 - [ ] Inclusão de suporte e renderização automática de legendas nas imagens.

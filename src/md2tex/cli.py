@@ -59,6 +59,12 @@ from .setup import print_dependency_report, run_interactive_setup
     type=click.Path(path_type=Path, dir_okay=False, exists=True),
     help="Template Jinja2 TEX personalizado.",
 )
+@click.option(
+    "--cover",
+    "cover_path",
+    type=click.Path(path_type=Path, dir_okay=False, exists=True),
+    help="Template Jinja2 TEX de capa personalizado que sobrescreve a capa padrão.",
+)
 @click.option("--pdf/--no-pdf", "generate_pdf", default=False, help="Compila o TEX para PDF.")
 @click.option("--validate/--no-validate", default=True, help="Executa validações antes/depois da conversão.")
 @click.option("--strict", is_flag=True, help="Interrompe a execução em caso de erros de validação.")
@@ -125,6 +131,7 @@ def main(
     system_name: str | None,
     figures_dir: Path,
     template_path: Path | None,
+    cover_path: Path | None,
     generate_pdf: bool,
     validate: bool,
     strict: bool,
@@ -145,6 +152,9 @@ def main(
     verbose: bool,
 ) -> None:
     """Converte INPUT_FILE Markdown para LaTeX/PDF; use `md2tex init` para criar a configuração."""
+    if profile != "default" and template_path is not None:
+        raise click.UsageError("--template e --type são mutuamente exclusivos. Use apenas um deles.")
+
     if check_deps:
         print_dependency_report()
         return
@@ -216,6 +226,7 @@ def main(
         profile=profile,
         figures_dir=figures_dir,
         template_path=template_path.resolve() if template_path else None,
+        cover_path=cover_path.resolve() if cover_path else None,
         generate_pdf=generate_pdf,
         validate=validate,
         strict=strict,
