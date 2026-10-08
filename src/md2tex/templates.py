@@ -76,6 +76,7 @@ def render_template(
             custom_cover = cover_template.render(
                 metadata=metadata,
                 user_config=user_config,
+                toc=toc,
                 engine=engine,
                 meeting_minutes=meeting_minutes,
                 source_dir=source_dir.as_posix().rstrip("/") + "/",
